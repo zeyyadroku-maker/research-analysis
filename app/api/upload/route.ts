@@ -6,24 +6,33 @@ import JSZip from 'jszip'
 
 // Text extraction from buffer supporting multiple formats
 async function extractTextFromBuffer(buffer: Buffer, mimeType: string, fileName: string): Promise<string> {
+  console.log(`[Extract START] File: ${fileName}, MIME: ${mimeType}, Size: ${buffer.length} bytes`)
+
   try {
     // Plain text file
     if (mimeType.includes('text') || fileName.endsWith('.txt')) {
-      return buffer.toString('utf-8')
+      const text = buffer.toString('utf-8')
+      console.log(`[Extract SUCCESS] TXT: Extracted ${text.length} characters`)
+      return text
     }
 
     // PDF extraction
     if (mimeType.includes('pdf') || fileName.endsWith('.pdf')) {
       try {
+        console.log(`[Extract PDF] Attempting to extract with pdf-parse...`)
         // Use require() inside function to avoid module resolution issues
         // eslint-disable-next-line global-require,import/no-dynamic-require
-        const pdfParse = require('pdf-parse/node')
+        const pdfParseModule = require('pdf-parse/node')
+        // The module exports the function as default or as the module itself
+        const pdfParse = pdfParseModule.default || pdfParseModule
+        console.log(`[Extract PDF] Module loaded, typeof: ${typeof pdfParse}`)
         const pdfData = await pdfParse(buffer)
         const extractedText = pdfData.text || ''
-        console.log(`[PDF] Extracted ${extractedText.length} characters from PDF`)
+        console.log(`[Extract SUCCESS] PDF: Extracted ${extractedText.length} characters from PDF (pages: ${pdfData.numpages || '?'})`)
         return extractedText
       } catch (pdfError) {
-        console.warn(`[PDF] Failed to extract text from PDF: ${pdfError instanceof Error ? pdfError.message : 'Unknown error'}`)
+        const errorMsg = pdfError instanceof Error ? pdfError.message : String(pdfError)
+        console.error(`[Extract FAILED] PDF: ${errorMsg}`)
         return ''
       }
     }
@@ -31,6 +40,7 @@ async function extractTextFromBuffer(buffer: Buffer, mimeType: string, fileName:
     // DOCX extraction
     if (mimeType.includes('wordprocessingml') || mimeType.includes('ms-word') || fileName.endsWith('.docx')) {
       try {
+        console.log(`[Extract DOCX] Attempting to extract from ZIP structure...`)
         // DOCX is a ZIP file containing XML - use jszip to extract text
         const zip = new JSZip()
         await zip.loadAsync(buffer)
@@ -38,6 +48,7 @@ async function extractTextFromBuffer(buffer: Buffer, mimeType: string, fileName:
         // Extract text from document.xml
         const docXml = await zip.file('word/document.xml')?.async('string')
         if (docXml) {
+          console.log(`[Extract DOCX] Found document.xml (${docXml.length} bytes), parsing XML...`)
           // Remove XML tags to get plain text
           const plainText = docXml
             .replace(/<[^>]*>/g, ' ') // Remove XML tags
@@ -48,21 +59,24 @@ async function extractTextFromBuffer(buffer: Buffer, mimeType: string, fileName:
             .replace(/\s+/g, ' ') // Collapse whitespace
             .trim()
 
-          console.log(`[DOCX] Extracted ${plainText.length} characters from DOCX`)
+          console.log(`[Extract SUCCESS] DOCX: Extracted ${plainText.length} characters from document`)
           return plainText
         }
+        console.error(`[Extract FAILED] DOCX: document.xml not found in ZIP`)
         return ''
       } catch (docxError) {
-        console.warn(`[DOCX] Failed to extract text from DOCX: ${docxError instanceof Error ? docxError.message : 'Unknown error'}`)
+        const errorMsg = docxError instanceof Error ? docxError.message : String(docxError)
+        console.error(`[Extract FAILED] DOCX: ${errorMsg}`)
         return ''
       }
     }
 
     // Unsupported format
-    console.log(`[Extract] Unsupported MIME type: ${mimeType}, filename: ${fileName}`)
+    console.warn(`[Extract FAILED] Unsupported format - MIME: ${mimeType}, filename: ${fileName}`)
     return ''
   } catch (error) {
-    console.error(`[Extract] Unexpected error: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    const errorMsg = error instanceof Error ? error.message : String(error)
+    console.error(`[Extract FAILED] Unexpected error: ${errorMsg}`)
     return ''
   }
 }
@@ -99,6 +113,9 @@ export async function POST(request: NextRequest) {
     // If no text extracted, at least use the filename
     if (!fileText) {
       fileText = file.name.replace(/\.[^/.]+$/, '')
+      console.warn(`[Fallback] Text extraction failed, using filename only: "${fileText}" (${fileText.length} chars)`)
+    } else {
+      console.log(`[Extraction Complete] Total extracted: ${fileText.length} characters`)
     }
 
     // Create a Paper object from the file
@@ -132,7 +149,9 @@ export async function POST(request: NextRequest) {
 
     // Build adaptive prompt
     let prompt: string
-    if (fileText.length > 1000) {
+    const textLength = fileText.length
+    if (textLength > 1000) {
+      console.log(`[Prompt Selection] FULL ASSESSMENT: Text length ${textLength} > 1000 threshold`)
       prompt = buildAssessmentPrompt({
         documentTitle: paper.title,
         documentType,
@@ -143,6 +162,7 @@ export async function POST(request: NextRequest) {
         abstract: paper.abstract,
       })
     } else {
+      console.log(`[Prompt Selection] ABSTRACT-ONLY: Text length ${textLength} ≤ 1000 threshold`)
       prompt = buildAbstractOnlyPrompt(paper.title, fileText, documentType, field)
     }
 
@@ -269,10 +289,13 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString(),
     }
 
+    console.log(`[Analysis Complete] Document: ${paper.title}, Credibility Score: ${credibilityScore.totalScore}/${credibilityScore.totalMaxScore}`)
     return NextResponse.json(result)
   } catch (error) {
-    console.error('Upload error:', error)
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    const stack = error instanceof Error ? error.stack : 'No stack trace'
+    console.error(`[Upload FAILED] Error: ${errorMessage}`)
+    console.error(`[Upload FAILED] Stack: ${stack}`)
     return NextResponse.json(
       { error: `Failed to process upload: ${errorMessage}` },
       { status: 500 }
