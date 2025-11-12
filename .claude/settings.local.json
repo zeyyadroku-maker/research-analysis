@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node --version:*)",
+      "Bash(npm:*)",
+      "Bash(powershell -Command \"try { $response = Invoke-WebRequest -Uri ''http://localhost:3000'' -UseBasicParsing -ErrorAction Stop; Write-Host ''Status: '' $response.StatusCode; Write-Host ''Content Length: '' $response.Content.Length } catch { Write-Host ''Connection Error: '' $_Exception.Message }\")",
+      "Bash(curl:*)",
+      "Bash(taskkill:*)",
+      "Bash(nul)",
+      "Bash(powershell -Command:*)",
+      "Bash(timeout 5 curl:*)",
+      "Bash(timeout 3 curl:*)",
+      "Bash(lsof:*)",
+      "Bash(pkill:*)",
+      "Bash(xargs:*)",
+      "Bash(git init:*)",
+      "Bash(git config:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

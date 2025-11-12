@@ -1,0 +1,302 @@
+'use client'
+
+import { useState } from 'react'
+import SearchBar, { SearchFilters } from './components/SearchBar'
+import ResultsCard from './components/ResultsCard'
+import DetailedAnalysisView from './components/DetailedAnalysisView'
+import PaginationBar from './components/PaginationBar'
+import Navigation from './components/Navigation'
+import { Paper, AnalysisResult } from './types'
+
+export default function Home() {
+  const [searchResults, setSearchResults] = useState<Paper[]>([])
+  const [filteredResults, setFilteredResults] = useState<Paper[]>([])
+  const [analysis, setAnalysis] = useState<AnalysisResult | null>(null)
+  const [isSearching, setIsSearching] = useState(false)
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [analyzingPaperId, setAnalyzingPaperId] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [totalHits, setTotalHits] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [hasMore, setHasMore] = useState(false)
+  const [lastQuery, setLastQuery] = useState<string>('')
+  const [lastFilters, setLastFilters] = useState<SearchFilters | undefined>()
+
+  // Apply filters to search results
+  const applyFilters = (papers: Paper[], filters: SearchFilters) => {
+    let filtered = papers
+
+    // Filter by date range
+    if (filters.fromDate) {
+      const fromYear = parseInt(filters.fromDate)
+      filtered = filtered.filter(p => (p.year || 0) >= fromYear)
+    }
+
+    if (filters.toDate) {
+      const toYear = parseInt(filters.toDate)
+      filtered = filtered.filter(p => (p.year || 9999) <= toYear)
+    }
+
+    // Filter by keyword (searches in abstract and title)
+    if (filters.keyword) {
+      const keyword = filters.keyword.toLowerCase()
+      filtered = filtered.filter(
+        p =>
+          p.title.toLowerCase().includes(keyword) ||
+          (p.abstract && p.abstract.toLowerCase().includes(keyword))
+      )
+    }
+
+    // Filter by title
+    if (filters.title) {
+      const titleFilter = filters.title.toLowerCase()
+      filtered = filtered.filter(p => p.title.toLowerCase().includes(titleFilter))
+    }
+
+    // Filter by author (word-based matching)
+    if (filters.author) {
+      const authorWords = filters.author.toLowerCase().split(/\s+/).filter(w => w.length > 0)
+      filtered = filtered.filter(p =>
+        p.authors.some(author => {
+          const authorLower = author.toLowerCase()
+          // All words must appear in the author name
+          return authorWords.every(word => authorLower.includes(word))
+        })
+      )
+    }
+
+    return filtered
+  }
+
+  const performSearch = async (query: string, page: number, filters?: SearchFilters) => {
+    setIsSearching(true)
+    setError(null)
+    setAnalysis(null)
+
+    try {
+      // Use "research" as default query if no query provided (for filter-only searches)
+      const searchQuery = query.trim() || 'research'
+
+      // Build URL with year filters
+      const apiUrl = new URL(`/api/search`, window.location.origin)
+      apiUrl.searchParams.append('q', searchQuery)
+      apiUrl.searchParams.append('page', page.toString())
+      if (filters?.fromDate) {
+        apiUrl.searchParams.append('fromYear', filters.fromDate)
+      }
+      if (filters?.toDate) {
+        apiUrl.searchParams.append('toYear', filters.toDate)
+      }
+
+      const response = await fetch(apiUrl.toString())
+      const data = await response.json()
+
+      if (!response.ok) {
+        const errorMessage = data.details ? `${data.error} - ${data.details}` : data.error
+        throw new Error(errorMessage || 'Failed to search papers')
+      }
+
+      if (!data.papers || !Array.isArray(data.papers)) {
+        throw new Error('Invalid response format from server')
+      }
+
+      setSearchResults(data.papers)
+      setTotalHits(data.totalHits || 0)
+      setHasMore(data.hasMore || false)
+      setCurrentPage(page)
+
+      // Apply filters if provided
+      const results = filters ? applyFilters(data.papers, filters) : data.papers
+      setFilteredResults(results)
+
+      if (results.length === 0 && page === 1) {
+        if (query.trim()) {
+          setError('No papers found. Try a different search term or adjust filters.')
+        } else if (filters && Object.values(filters).some(v => v)) {
+          setError('No papers found matching your filters. Try adjusting your filter criteria.')
+        } else {
+          setError('No papers found. Please enter a search term or use the advanced filters.')
+        }
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred during search'
+      setError(errorMessage)
+      console.error('Search error:', err)
+    } finally {
+      setIsSearching(false)
+    }
+  }
+
+  const handleSearch = async (query: string, filters?: SearchFilters) => {
+    setCurrentPage(1)
+    setLastQuery(query)
+    setLastFilters(filters)
+    await performSearch(query, 1, filters)
+  }
+
+  const handlePageChange = async (page: number) => {
+    await performSearch(lastQuery, page, lastFilters)
+  }
+
+  const handleAnalyze = async (paper: Paper) => {
+    setIsAnalyzing(true)
+    setAnalyzingPaperId(paper.id)
+    setError(null)
+
+    try {
+      const fullText = paper.abstract || 'This is a research paper...'
+
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          paper,
+          fullText,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+
+        // Handle specific error cases
+        if (errorData.details?.error?.message?.includes('credit balance')) {
+          throw new Error(
+            'Claude API credits exhausted. Please add credits to your Anthropic account at console.anthropic.com/account/billing/overview'
+          )
+        }
+
+        const errorMsg = errorData.details?.message || errorData.error || 'Failed to analyze paper'
+        throw new Error(errorMsg)
+      }
+
+      const result = await response.json() as AnalysisResult
+      setAnalysis(result)
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred during analysis'
+      setError(errorMessage)
+      console.error('Analysis error:', err)
+    } finally {
+      setIsAnalyzing(false)
+      setAnalyzingPaperId(null)
+    }
+  }
+
+  return (
+    <main className="min-h-screen bg-white dark:bg-dark-900 transition-colors">
+      {/* Navigation */}
+      <Navigation />
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Header */}
+        <div className="mb-12 text-center">
+          <h2 className="text-5xl font-bold text-gray-900 dark:text-white mb-4">
+            Research Paper Analysis Platform
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 text-lg max-w-2xl mx-auto">
+            Conduct systematic research paper analysis with AI-powered credibility assessment, bias detection, and comprehensive quality evaluation.
+          </p>
+        </div>
+
+        {/* Search Bar */}
+        <SearchBar onSearch={handleSearch} isLoading={isSearching} />
+
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4 mb-6 text-red-700 dark:text-red-200 animate-slide-up">
+            <div className="flex gap-3 justify-between items-start">
+              <div className="flex gap-3">
+                <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+                <span>{error}</span>
+              </div>
+              <button
+                onClick={() => setError(null)}
+                className="flex-shrink-0 ml-4 text-red-700 dark:text-red-200 hover:text-red-900 dark:hover:text-red-100 transition-colors"
+                title="Dismiss error"
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Results Grid */}
+        {filteredResults.length > 0 && (
+          <div className="mb-8">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                Search Results
+                <span className="text-gray-600 dark:text-gray-400 text-lg font-normal ml-2">
+                  ({filteredResults.length} of {totalHits})
+                </span>
+              </h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredResults.map((paper) => (
+                <ResultsCard
+                  key={paper.id}
+                  paper={paper}
+                  onAnalyze={handleAnalyze}
+                  isAnalyzing={analyzingPaperId === paper.id && isAnalyzing}
+                />
+              ))}
+            </div>
+
+            {/* Pagination */}
+            <PaginationBar
+              currentPage={currentPage}
+              totalPages={Math.ceil(totalHits / 10)}
+              hasMore={hasMore}
+              onPageChange={handlePageChange}
+              isLoading={isSearching}
+            />
+          </div>
+        )}
+
+        {/* Empty State */}
+        {filteredResults.length === 0 && !isSearching && !error && (
+          <div className="text-center py-12">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto text-gray-400 dark:text-gray-500 mb-4">
+              <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/>
+              <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/>
+              <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/>
+              <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/>
+            </svg>
+            <h3 className="text-xl font-medium text-gray-700 dark:text-gray-300 mb-2">Begin Your Analysis</h3>
+            <p className="text-gray-600 dark:text-gray-400">Use the search above to find and analyze research papers</p>
+          </div>
+        )}
+
+        {/* Loading State */}
+        {isSearching && (
+          <div className="text-center py-12">
+            <div className="inline-flex items-center gap-2 text-gray-400">
+              <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Searching for papers...
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Detailed Analysis Modal */}
+      {analysis && (
+        <DetailedAnalysisView
+          analysis={analysis}
+          onClose={() => {
+            setAnalysis(null)
+          }}
+        />
+      )}
+    </main>
+  )
+}
