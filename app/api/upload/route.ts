@@ -154,6 +154,15 @@ export async function POST(request: NextRequest) {
 
     const analysisData = JSON.parse(jsonMatch[0])
 
+    // Validate that credibility data exists
+    if (!analysisData.credibility) {
+      console.error('Missing credibility data in analysis response:', analysisData)
+      return NextResponse.json(
+        { error: 'Invalid analysis response: missing credibility assessment' },
+        { status: 500 }
+      )
+    }
+
     // Validate and cap credibility score
     const maxWeight = (
       framework.weights.methodologicalRigor +
@@ -165,6 +174,14 @@ export async function POST(request: NextRequest) {
     )
 
     const credibilityScore = analysisData.credibility
+    if (!credibilityScore.totalScore && credibilityScore.totalScore !== 0) {
+      console.error('Missing totalScore in credibility data:', credibilityScore)
+      return NextResponse.json(
+        { error: 'Invalid analysis response: missing credibility totalScore' },
+        { status: 500 }
+      )
+    }
+
     if (credibilityScore.totalScore > maxWeight) {
       console.warn(
         `[Score Validation] Credibility score ${credibilityScore.totalScore.toFixed(2)} exceeds maximum weight ${maxWeight.toFixed(2)}. Capping to maximum.`
