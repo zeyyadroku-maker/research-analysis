@@ -32,7 +32,6 @@ async function extractTextFromBuffer(buffer: Buffer, mimeType: string, fileName:
     if (mimeType.includes('wordprocessingml') || mimeType.includes('ms-word') || fileName.endsWith('.docx')) {
       try {
         // DOCX is a ZIP file containing XML - use jszip to extract text
-        const JSZip = require('jszip')
         const zip = new JSZip()
         await zip.loadAsync(buffer)
 
