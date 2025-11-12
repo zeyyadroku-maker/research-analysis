@@ -20,19 +20,36 @@ async function extractTextFromBuffer(buffer: Buffer, mimeType: string, fileName:
     if (mimeType.includes('pdf') || fileName.endsWith('.pdf')) {
       try {
         console.log(`[Extract PDF] Attempting to extract with pdf-parse...`)
-        // Use require() inside function to avoid module resolution issues
-        // eslint-disable-next-line global-require,import/no-dynamic-require
-        const pdfParseModule = require('pdf-parse/node')
-        // The module exports the function as default or as the module itself
-        const pdfParse = pdfParseModule.default || pdfParseModule
-        console.log(`[Extract PDF] Module loaded, typeof: ${typeof pdfParse}`)
+        // Use dynamic import for better module resolution
+        const pdfParseModule = await import('pdf-parse/node')
+        const pdfParse = pdfParseModule.default
+        console.log(`[Extract PDF] Module loaded, typeof: ${typeof pdfParse}, has default: ${!!pdfParseModule.default}`)
+        if (typeof pdfParse !== 'function') {
+          throw new Error(`pdf-parse module is not a function: received ${typeof pdfParse}`)
+        }
         const pdfData = await pdfParse(buffer)
         const extractedText = pdfData.text || ''
         console.log(`[Extract SUCCESS] PDF: Extracted ${extractedText.length} characters from PDF (pages: ${pdfData.numpages || '?'})`)
         return extractedText
       } catch (pdfError) {
         const errorMsg = pdfError instanceof Error ? pdfError.message : String(pdfError)
-        console.error(`[Extract FAILED] PDF: ${errorMsg}`)
+        console.error(`[Extract FAILED] PDF /node: ${errorMsg}`)
+        // Try fallback with main pdf-parse export
+        try {
+          console.log(`[Extract PDF] Trying fallback with main pdf-parse export...`)
+          const fallbackModule = await import('pdf-parse')
+          const fallbackParse = fallbackModule.default
+          console.log(`[Extract PDF] Fallback module loaded, typeof: ${typeof fallbackParse}`)
+          if (typeof fallbackParse === 'function') {
+            const pdfData = await fallbackParse(buffer)
+            const extractedText = pdfData.text || ''
+            console.log(`[Extract SUCCESS] PDF (fallback): Extracted ${extractedText.length} characters`)
+            return extractedText
+          }
+        } catch (fallbackError) {
+          const fallbackMsg = fallbackError instanceof Error ? fallbackError.message : String(fallbackError)
+          console.error(`[Extract FAILED] PDF fallback also failed: ${fallbackMsg}`)
+        }
         return ''
       }
     }
