@@ -2,17 +2,67 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Paper, AnalysisResult } from '@/app/types'
 import { classifyDocumentType, classifyAcademicField, getFrameworkGuidelines } from '@/app/lib/adaptiveFramework'
 import { buildAssessmentPrompt, buildAbstractOnlyPrompt } from '@/app/lib/promptBuilder'
+import * as pdfParse from 'pdf-parse'
 
-// Simple text extraction from buffer
-function extractTextFromBuffer(buffer: Buffer, mimeType: string): string {
-  if (mimeType.includes('text')) {
+// Text extraction from buffer supporting multiple formats
+async function extractTextFromBuffer(buffer: Buffer, mimeType: string, fileName: string): Promise<string> {
+  try {
     // Plain text file
-    return buffer.toString('utf-8')
-  }
+    if (mimeType.includes('text') || fileName.endsWith('.txt')) {
+      return buffer.toString('utf-8')
+    }
 
-  // For PDF and other binary formats, return empty string
-  // This will allow the system to fall back to using just the filename as title
-  return ''
+    // PDF extraction
+    if (mimeType.includes('pdf') || fileName.endsWith('.pdf')) {
+      try {
+        const pdfData = await pdfParse(buffer)
+        const extractedText = pdfData.text || ''
+        console.log(`[PDF] Extracted ${extractedText.length} characters from PDF`)
+        return extractedText
+      } catch (pdfError) {
+        console.warn(`[PDF] Failed to extract text from PDF: ${pdfError instanceof Error ? pdfError.message : 'Unknown error'}`)
+        return ''
+      }
+    }
+
+    // DOCX extraction
+    if (mimeType.includes('wordprocessingml') || mimeType.includes('ms-word') || fileName.endsWith('.docx')) {
+      try {
+        // DOCX is a ZIP file containing XML - use jszip to extract text
+        const JSZip = require('jszip')
+        const zip = new JSZip()
+        await zip.loadAsync(buffer)
+
+        // Extract text from document.xml
+        const docXml = await zip.file('word/document.xml')?.async('string')
+        if (docXml) {
+          // Remove XML tags to get plain text
+          const plainText = docXml
+            .replace(/<[^>]*>/g, ' ') // Remove XML tags
+            .replace(/&nbsp;/g, ' ')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&amp;/g, '&')
+            .replace(/\s+/g, ' ') // Collapse whitespace
+            .trim()
+
+          console.log(`[DOCX] Extracted ${plainText.length} characters from DOCX`)
+          return plainText
+        }
+        return ''
+      } catch (docxError) {
+        console.warn(`[DOCX] Failed to extract text from DOCX: ${docxError instanceof Error ? docxError.message : 'Unknown error'}`)
+        return ''
+      }
+    }
+
+    // Unsupported format
+    console.log(`[Extract] Unsupported MIME type: ${mimeType}, filename: ${fileName}`)
+    return ''
+  } catch (error) {
+    console.error(`[Extract] Unexpected error: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    return ''
+  }
 }
 
 // Generate a simple hash for file-based ID
@@ -42,7 +92,7 @@ export async function POST(request: NextRequest) {
 
     // Extract text from file
     const buffer = Buffer.from(await file.arrayBuffer())
-    let fileText = extractTextFromBuffer(buffer, file.type)
+    let fileText = await extractTextFromBuffer(buffer, file.type, file.name)
 
     // If no text extracted, at least use the filename
     if (!fileText) {
