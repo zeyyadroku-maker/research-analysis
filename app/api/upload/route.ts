@@ -1,19 +1,64 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { AnalysisResult, Paper } from '@/app/types'
-import { fetchDocumentSafe } from '@/app/lib/documentFetcher'
-import { processPdfDocument, processTextDocument } from '@/app/lib/documentProcessor'
+import { Paper, AnalysisResult } from '@/app/types'
 import { classifyDocumentType, classifyAcademicField, getFrameworkGuidelines } from '@/app/lib/adaptiveFramework'
 import { buildAssessmentPrompt, buildAbstractOnlyPrompt } from '@/app/lib/promptBuilder'
 
+// Simple text extraction from buffer
+function extractTextFromBuffer(buffer: Buffer, mimeType: string): string {
+  if (mimeType.includes('text')) {
+    // Plain text file
+    return buffer.toString('utf-8')
+  }
+
+  // For PDF and other binary formats, return empty string
+  // This will allow the system to fall back to using just the filename as title
+  return ''
+}
+
+// Generate a simple hash for file-based ID
+function generateFileId(fileName: string): string {
+  let hash = 0
+  for (let i = 0; i < fileName.length; i++) {
+    const char = fileName.charCodeAt(i)
+    hash = ((hash << 5) - hash) + char
+    hash = hash & hash
+  }
+  return `file-${Math.abs(hash).toString(36)}`
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const { paper, fullText } = await request.json() as { paper: Paper; fullText: string }
+    const formData = await request.formData()
+    const file = formData.get('file') as File
 
-    if (!paper) {
+    if (!file) {
       return NextResponse.json(
-        { error: 'Paper is required' },
+        { error: 'No file provided' },
         { status: 400 }
       )
+    }
+
+    console.log(`Processing uploaded file: ${file.name} (${file.size} bytes)`)
+
+    // Extract text from file
+    const buffer = Buffer.from(await file.arrayBuffer())
+    let fileText = extractTextFromBuffer(buffer, file.type)
+
+    // If no text extracted, at least use the filename
+    if (!fileText) {
+      fileText = file.name.replace(/\.[^/.]+$/, '')
+    }
+
+    // Create a Paper object from the file
+    const fileName = file.name.replace(/\.[^/.]+$/, '')
+    const paper: Paper = {
+      id: generateFileId(file.name),
+      title: fileName,
+      authors: ['Uploaded Document'],
+      abstract: fileText.substring(0, 1000),
+      year: new Date().getFullYear(),
+      documentType: 'unknown',
+      field: 'interdisciplinary',
     }
 
     const apiKey = process.env.CLAUDE_API_KEY
@@ -24,74 +69,29 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    console.log(`Analyzing paper: ${paper.title}`)
-
-    let analysisText = fullText || paper.abstract || ''
-
-    // Try to fetch full document if not provided
-    if (!analysisText && (paper.doi || paper.url || paper.openAlexId)) {
-      console.log('Attempting to fetch full document...')
-      const doc = await fetchDocumentSafe(paper.id, {
-        doi: paper.doi,
-        url: paper.url,
-        openAlexId: paper.openAlexId,
-        abstract: paper.abstract,
-      })
-
-      if (doc) {
-        console.log(`Successfully fetched document (${doc.size} bytes) from ${doc.source.type}`)
-        try {
-          // Try to process as PDF
-          if (doc.source.type === 'arxiv' || doc.mimeType.includes('pdf')) {
-            const processed = await processPdfDocument(doc.content, {
-              title: paper.title,
-              authors: paper.authors,
-              abstract: paper.abstract,
-            })
-            analysisText = processed.fullText
-          } else {
-            // Process as text
-            const processed = await processTextDocument(doc.content.toString('utf-8'), {
-              title: paper.title,
-              authors: paper.authors,
-              abstract: paper.abstract,
-            })
-            analysisText = processed.fullText
-          }
-        } catch (processingError) {
-          console.error('Error processing document:', processingError)
-          // Fall back to abstract
-          analysisText = paper.abstract || fullText || 'Document could not be processed'
-        }
-      } else {
-        console.log('Could not fetch full document, using abstract')
-        analysisText = paper.abstract || fullText || ''
-      }
-    }
+    console.log(`Analyzing uploaded document: ${paper.title}`)
 
     // Classify document type and field
-    const documentType = classifyDocumentType(analysisText, paper.title)
-    const field = classifyAcademicField(analysisText, paper.title)
+    const documentType = classifyDocumentType(fileText, paper.title)
+    const field = classifyAcademicField(fileText, paper.title)
     const framework = getFrameworkGuidelines(documentType, field)
 
     console.log(`Document classified as: ${documentType} in ${field}`)
 
     // Build adaptive prompt
     let prompt: string
-    if (analysisText.length > 1000) {
-      // Have substantial text - use full framework prompt
+    if (fileText.length > 1000) {
       prompt = buildAssessmentPrompt({
         documentTitle: paper.title,
         documentType,
         field,
         framework,
-        chunks: [], // We don't use chunks in the simple path
-        fullText: analysisText,
+        chunks: [],
+        fullText: fileText,
         abstract: paper.abstract,
       })
     } else {
-      // Only have abstract - use abstract-only prompt
-      prompt = buildAbstractOnlyPrompt(paper.title, paper.abstract || analysisText, documentType, field)
+      prompt = buildAbstractOnlyPrompt(paper.title, fileText, documentType, field)
     }
 
     // Call Claude API
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
         max_tokens: 4000,
         temperature: 0,
         system:
-          'You are an expert research analyst specializing in adaptive assessment frameworks. Analyze research papers and return valid JSON responses only. Do not include any text before or after the JSON.',
+          'You are an expert research analyst specializing in adaptive assessment frameworks. Analyze research documents and return valid JSON responses only. Do not include any text before or after the JSON.',
         messages: [
           {
             role: 'user',
@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
 
     const analysisData = JSON.parse(jsonMatch[0])
 
-    // Validate and cap credibility score to prevent exceeding assessment weight maximum
+    // Validate and cap credibility score
     const maxWeight = (
       framework.weights.methodologicalRigor +
       framework.weights.dataTransparency +
@@ -202,10 +202,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(result)
   } catch (error) {
-    console.error('Analysis error:', error)
+    console.error('Upload error:', error)
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     return NextResponse.json(
-      { error: `Failed to analyze paper: ${errorMessage}` },
+      { error: `Failed to process upload: ${errorMessage}` },
       { status: 500 }
     )
   }

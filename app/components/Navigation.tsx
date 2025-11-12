@@ -4,13 +4,24 @@ import { useTheme } from '@/app/providers/ThemeProvider'
 import Link from 'next/link'
 import Image from 'next/image'
 
-export default function Navigation() {
+interface NavigationProps {
+  onLogoClick?: () => void
+}
+
+export default function Navigation({ onLogoClick }: NavigationProps) {
   const { theme, toggleTheme } = useTheme()
+
+  const handleLogoClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    if (onLogoClick) {
+      onLogoClick()
+    }
+  }
 
   return (
     <nav className="sticky top-0 z-40 bg-white dark:bg-dark-800/80 backdrop-blur-md border-b border-gray-200 dark:border-dark-700 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition">
+        <button onClick={handleLogoClick} className="flex items-center gap-2 hover:opacity-80 transition bg-none border-none p-0 cursor-pointer">
           <div className="w-24 h-24 rounded-lg shadow-lg transition-all duration-200 flex items-center justify-center overflow-hidden">
             <Image
               src={theme === 'light' ? '/lightmode.png' : '/darkmode.png'}
@@ -21,7 +32,7 @@ export default function Navigation() {
               className="w-full h-full object-cover"
             />
           </div>
-        </Link>
+        </button>
         <div className="flex items-center gap-3">
           <button
             onClick={toggleTheme}

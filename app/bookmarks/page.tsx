@@ -74,9 +74,19 @@ export default function BookmarksPage() {
               >
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1 mr-4">
-                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white group-hover:text-accent-blue transition-colors line-clamp-2 mb-2">
+                    <button
+                      onClick={() => {
+                        const url = bookmark.analysis.paper.url ||
+                                   (bookmark.analysis.paper.doi ? `https://doi.org/${bookmark.analysis.paper.doi}` : null)
+                        if (url) {
+                          window.open(url, '_blank')
+                        }
+                      }}
+                      disabled={!bookmark.analysis.paper.url && !bookmark.analysis.paper.doi}
+                      className="text-xl font-semibold text-gray-900 dark:text-white group-hover:text-accent-blue transition-colors line-clamp-2 mb-2 text-left bg-none border-none p-0 cursor-pointer hover:underline disabled:cursor-default disabled:opacity-75 disabled:hover:no-underline"
+                    >
                       {bookmark.analysis.paper.title}
-                    </h3>
+                    </button>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                       {bookmark.analysis.paper.authors.slice(0, 3).join(', ')}
                       {bookmark.analysis.paper.authors.length > 3 && ` +${bookmark.analysis.paper.authors.length - 3} more`}

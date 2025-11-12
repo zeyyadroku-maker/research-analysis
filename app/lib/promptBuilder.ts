@@ -31,14 +31,14 @@ DOCUMENT INFORMATION:
 ASSESSMENT FRAMEWORK CONTEXT:
 ${fieldGuidance}
 
-CREDIBILITY ASSESSMENT COMPONENTS (total possible: 10.0 points):
+CREDIBILITY ASSESSMENT COMPONENTS (total possible: ${(context.framework.weights.methodologicalRigor + context.framework.weights.dataTransparency + context.framework.weights.sourceQuality + context.framework.weights.authorCredibility + context.framework.weights.statisticalValidity + context.framework.weights.logicalConsistency).toFixed(1)} points):
 Assessment weight/priority for this ${typeDescriptions.name} in ${context.field.replace(/-/g, ' ')}:
-- Methodological Rigor: Weight ${context.framework.weights.methodologicalRigor} / Scoring range 0-2.5
-- Data Transparency: Weight ${context.framework.weights.dataTransparency} / Scoring range 0-2.0
-- Source Quality: Weight ${context.framework.weights.sourceQuality} / Scoring range 0-1.5
-- Author Credibility: Weight ${context.framework.weights.authorCredibility} / Scoring range 0-1.5
-- Statistical Validity: Weight ${context.framework.weights.statisticalValidity} / Scoring range 0-1.5
-- Logical Consistency: Weight ${context.framework.weights.logicalConsistency} / Scoring range 0-1.0
+- Methodological Rigor: Maximum score ${context.framework.weights.methodologicalRigor}
+- Data Transparency: Maximum score ${context.framework.weights.dataTransparency}
+- Source Quality: Maximum score ${context.framework.weights.sourceQuality}
+- Author Credibility: Maximum score ${context.framework.weights.authorCredibility}
+- Statistical Validity: Maximum score ${context.framework.weights.statisticalValidity}
+- Logical Consistency: Maximum score ${context.framework.weights.logicalConsistency}
 
 ASSESSMENT FOCUS AREAS:
 - ${focusAreas}
@@ -55,42 +55,42 @@ Provide a comprehensive assessment with the following JSON structure:
 {
   "credibility": {
     "methodologicalRigor": {
-      "score": <0-2.5>,
-      "maxScore": 2.5,
+      "score": <0-${context.framework.weights.methodologicalRigor}>,
+      "maxScore": ${context.framework.weights.methodologicalRigor},
       "description": "<brief explanation of methodology assessment>",
       "evidence": ["<specific evidence 1>", "<specific evidence 2>"]
     },
     "dataTransparency": {
-      "score": <0-2.0>,
-      "maxScore": 2.0,
+      "score": <0-${context.framework.weights.dataTransparency}>,
+      "maxScore": ${context.framework.weights.dataTransparency},
       "description": "<explanation>",
       "evidence": ["<evidence 1>", "<evidence 2>"]
     },
     "sourceQuality": {
-      "score": <0-1.5>,
-      "maxScore": 1.5,
+      "score": <0-${context.framework.weights.sourceQuality}>,
+      "maxScore": ${context.framework.weights.sourceQuality},
       "description": "<explanation>",
       "evidence": ["<evidence 1>"]
     },
     "authorCredibility": {
-      "score": <0-1.5>,
-      "maxScore": 1.5,
+      "score": <0-${context.framework.weights.authorCredibility}>,
+      "maxScore": ${context.framework.weights.authorCredibility},
       "description": "<explanation>",
       "evidence": ["<evidence 1>"]
     },
     "statisticalValidity": {
-      "score": <0-1.5>,
-      "maxScore": 1.5,
+      "score": <0-${context.framework.weights.statisticalValidity}>,
+      "maxScore": ${context.framework.weights.statisticalValidity},
       "description": "<explanation>",
       "evidence": ["<evidence 1>"]
     },
     "logicalConsistency": {
-      "score": <0-1.0>,
-      "maxScore": 1.0,
+      "score": <0-${context.framework.weights.logicalConsistency}>,
+      "maxScore": ${context.framework.weights.logicalConsistency},
       "description": "<explanation>",
       "evidence": ["<evidence 1>"]
     },
-    "totalScore": <sum of above scores>,
+    "totalScore": <sum of above scores, should not exceed ${(context.framework.weights.methodologicalRigor + context.framework.weights.dataTransparency + context.framework.weights.sourceQuality + context.framework.weights.authorCredibility + context.framework.weights.statisticalValidity + context.framework.weights.logicalConsistency).toFixed(1)},
     "rating": "<Exemplary|Strong|Moderate|Weak|Very Poor|Invalid>"
   },
   "bias": {
@@ -169,13 +169,15 @@ Provide a comprehensive assessment with the following JSON structure:
 
 CRITICAL INSTRUCTIONS:
 1. All scores must use the weighted scale provided (not 0-10)
-2. Rate with accuracy - do not inflate scores
-3. Focus on what IS in the document, not what should be there
-4. For ${typeDescriptions.name}, prioritize assessment of: ${typeDescriptions.priorities}
-5. Consider field-specific expectations for ${context.field}
-6. If information is unavailable, indicate this in evidence
-7. Be specific: cite examples, direct quotes, or clear evidence
-8. Return ONLY valid JSON, no additional text before or after
+2. IMPORTANT: totalScore must never exceed ${(context.framework.weights.methodologicalRigor + context.framework.weights.dataTransparency + context.framework.weights.sourceQuality + context.framework.weights.authorCredibility + context.framework.weights.statisticalValidity + context.framework.weights.logicalConsistency).toFixed(1)} - this is the maximum possible assessment weight
+3. Each component must stay within its specified maximum (e.g., methodologicalRigor max: ${context.framework.weights.methodologicalRigor})
+4. Rate with accuracy - do not inflate scores
+5. Focus on what IS in the document, not what should be there
+6. For ${typeDescriptions.name}, prioritize assessment of: ${typeDescriptions.priorities}
+7. Consider field-specific expectations for ${context.field}
+8. If information is unavailable, indicate this in evidence
+9. Be specific: cite examples, direct quotes, or clear evidence
+10. Return ONLY valid JSON, no additional text before or after
 `
 }
 

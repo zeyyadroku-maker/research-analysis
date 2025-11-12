@@ -6,9 +6,13 @@ import ResultsCard from './components/ResultsCard'
 import DetailedAnalysisView from './components/DetailedAnalysisView'
 import PaginationBar from './components/PaginationBar'
 import Navigation from './components/Navigation'
+import FileUploadTab from './components/FileUploadTab'
 import { Paper, AnalysisResult } from './types'
 
+type TabType = 'search' | 'upload'
+
 export default function Home() {
+  const [activeTab, setActiveTab] = useState<TabType>('search')
   const [searchResults, setSearchResults] = useState<Paper[]>([])
   const [filteredResults, setFilteredResults] = useState<Paper[]>([])
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null)
@@ -147,6 +151,19 @@ export default function Home() {
     await performSearch(lastQuery, page, lastFilters)
   }
 
+  const handleLogoClick = () => {
+    // Clear all search and filter state
+    setSearchResults([])
+    setFilteredResults([])
+    setAnalysis(null)
+    setError(null)
+    setCurrentPage(1)
+    setLastQuery('')
+    setLastFilters(undefined)
+    setTotalHits(0)
+    setHasMore(false)
+  }
+
   const handleAnalyze = async (paper: Paper) => {
     setIsAnalyzing(true)
     setAnalyzingPaperId(paper.id)
@@ -195,7 +212,7 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-white dark:bg-dark-900 transition-colors">
       {/* Navigation */}
-      <Navigation />
+      <Navigation onLogoClick={handleLogoClick} />
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -209,8 +226,64 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Search Bar */}
-        <SearchBar onSearch={handleSearch} isLoading={isSearching} />
+        {/* Tab Navigation */}
+        <div className="mb-8 flex gap-4 border-b border-gray-200 dark:border-dark-700">
+          <button
+            onClick={() => setActiveTab('search')}
+            className={`px-4 py-3 font-medium text-lg border-b-2 transition-all duration-200 ${
+              activeTab === 'search'
+                ? 'border-accent-blue text-accent-blue'
+                : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              Search Papers
+            </div>
+          </button>
+          <button
+            onClick={() => setActiveTab('upload')}
+            className={`px-4 py-3 font-medium text-lg border-b-2 transition-all duration-200 ${
+              activeTab === 'upload'
+                ? 'border-accent-blue text-accent-blue'
+                : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-300'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+              Upload Document
+            </div>
+          </button>
+        </div>
+
+        {/* Tab Content */}
+        {activeTab === 'search' && (
+          <>
+            {/* Search Bar */}
+            <SearchBar onSearch={handleSearch} isLoading={isSearching} />
+          </>
+        )}
+
+        {activeTab === 'upload' && (
+          <>
+            {/* File Upload Tab */}
+            <FileUploadTab
+              onAnalysisStart={() => {
+                setError(null)
+                setAnalysis(null)
+              }}
+              onAnalysisComplete={(result) => {
+                setAnalysis(result)
+                window.scrollTo({ top: 0, behavior: 'smooth' })
+              }}
+              onError={(err) => setError(err)}
+            />
+          </>
+        )}
 
         {/* Error Message */}
         {error && (
