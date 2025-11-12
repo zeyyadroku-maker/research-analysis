@@ -8,65 +8,30 @@ interface SearchBarProps {
 }
 
 export interface SearchFilters {
-  fromDate?: string
-  toDate?: string
-  keyword?: string
-  title?: string
   author?: string
 }
 
 export default function SearchBar({ onSearch, isLoading = false }: SearchBarProps) {
   const [query, setQuery] = useState('')
   const [showFilters, setShowFilters] = useState(false)
-  const [fromDate, setFromDate] = useState('')
-  const [toDate, setToDate] = useState('')
-  const [keyword, setKeyword] = useState('')
-  const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
-  const [dateError, setDateError] = useState<string | null>(null)
 
-  // Check if any filters are active
-  const hasActiveFilters = !!(fromDate || toDate || keyword || title || author)
+  // Check if author filter is active (only active filter now)
+  const hasActiveFilters = !!author
 
-  // Validate date range
-  const validateDateRange = (): boolean => {
-    if (fromDate && toDate) {
-      const from = parseInt(fromDate)
-      const to = parseInt(toDate)
-      if (from > to) {
-        setDateError(`From year (${from}) cannot be later than To year (${to})`)
-        return false
-      }
-    }
-    setDateError(null)
-    return true
-  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Validate date range before submitting
-    if (!validateDateRange()) {
-      return
-    }
-
-    // Allow search if either query is provided OR filters are active
+    // Allow search if either query is provided OR author filter is active
     if (query.trim() || hasActiveFilters) {
       onSearch(query, {
-        fromDate: fromDate || undefined,
-        toDate: toDate || undefined,
-        keyword: keyword || undefined,
-        title: title || undefined,
         author: author || undefined,
       })
     }
   }
 
   const handleClearFilters = () => {
-    setFromDate('')
-    setToDate('')
-    setKeyword('')
-    setTitle('')
     setAuthor('')
   }
 
@@ -114,13 +79,6 @@ export default function SearchBar({ onSearch, isLoading = false }: SearchBarProp
         </button>
       </form>
 
-      {/* Date Range Error */}
-      {dateError && (
-        <div className="mb-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-3">
-          <p className="text-sm text-red-700 dark:text-red-200">{dateError}</p>
-        </div>
-      )}
-
       {/* Advanced Filters Panel */}
       {showFilters && (
         <div className="bg-gray-50 dark:bg-dark-700 border border-gray-200 dark:border-dark-600 rounded-lg p-6 mb-4 animate-slide-down">
@@ -135,83 +93,67 @@ export default function SearchBar({ onSearch, isLoading = false }: SearchBarProp
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* From Year */}
+          <div className="grid grid-cols-1 gap-4">
+            {/* Author Filter - ONLY ACTIVE FILTER */}
             <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-2">From Year</label>
-              <select
-                value={fromDate}
-                onChange={(e) => setFromDate(e.target.value)}
-                className="w-full px-3 py-2 bg-white dark:bg-dark-800 border border-gray-300 dark:border-dark-600 rounded text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 dark:focus:border-accent-blue transition-all cursor-pointer"
-              >
-                <option value="">Any Year</option>
-                {Array.from({ length: new Date().getFullYear() - 1899 }, (_, i) => new Date().getFullYear() - i).map((year) => {
-                  // Disable years that are later than toDate
-                  const isDisabled = toDate && year > parseInt(toDate)
-                  return (
-                    <option key={year} value={year} disabled={isDisabled}>
-                      {year}
-                    </option>
-                  )
-                })}
-              </select>
-            </div>
-
-            {/* To Year */}
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-2">To Year</label>
-              <select
-                value={toDate}
-                onChange={(e) => setToDate(e.target.value)}
-                className="w-full px-3 py-2 bg-white dark:bg-dark-800 border border-gray-300 dark:border-dark-600 rounded text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 dark:focus:border-accent-blue transition-all cursor-pointer"
-              >
-                <option value="">Any Year</option>
-                {Array.from({ length: new Date().getFullYear() - 1899 }, (_, i) => new Date().getFullYear() - i).map((year) => {
-                  // Disable years that are earlier than fromDate
-                  const isDisabled = fromDate && year < parseInt(fromDate)
-                  return (
-                    <option key={year} value={year} disabled={isDisabled}>
-                      {year}
-                    </option>
-                  )
-                })}
-              </select>
-            </div>
-
-            {/* Keyword Filter */}
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-2">Keyword</label>
-              <input
-                type="text"
-                value={keyword}
-                onChange={(e) => setKeyword(e.target.value)}
-                placeholder="Filter by keyword..."
-                className="w-full px-3 py-2 bg-white dark:bg-dark-800 border border-gray-300 dark:border-dark-600 rounded text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 dark:focus:border-accent-blue transition-all"
-              />
-            </div>
-
-            {/* Title Filter */}
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-2">Title Contains</label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Filter by title..."
-                className="w-full px-3 py-2 bg-white dark:bg-dark-800 border border-gray-300 dark:border-dark-600 rounded text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 dark:focus:border-accent-blue transition-all"
-              />
-            </div>
-
-            {/* Author Filter */}
-            <div>
-              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-2">Author Name</label>
+              <label className="block text-sm text-gray-700 dark:text-gray-300 mb-2 font-semibold">Author Name (Server-Side Search)</label>
               <input
                 type="text"
                 value={author}
                 onChange={(e) => setAuthor(e.target.value)}
-                placeholder="Filter by author..."
+                placeholder="Search by author name (e.g., John Smith, Albert Einstein)..."
                 className="w-full px-3 py-2 bg-white dark:bg-dark-800 border border-gray-300 dark:border-dark-600 rounded text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 dark:focus:border-accent-blue transition-all"
               />
+            </div>
+
+            {/* Disabled Filters - Greyed Out */}
+            <div className="pt-4 border-t border-gray-300 dark:border-dark-600">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-3 italic">The following filters are not yet functional with OpenAlex API and have been disabled:</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 opacity-50 pointer-events-none">
+                {/* From Year - DISABLED */}
+                <div>
+                  <label className="block text-sm text-gray-700 dark:text-gray-300 mb-2">From Year (Disabled)</label>
+                  <select
+                    disabled
+                    className="w-full px-3 py-2 bg-gray-100 dark:bg-dark-900 border border-gray-300 dark:border-dark-600 rounded text-gray-600 dark:text-gray-500 cursor-not-allowed"
+                  >
+                    <option value="">Any Year</option>
+                  </select>
+                </div>
+
+                {/* To Year - DISABLED */}
+                <div>
+                  <label className="block text-sm text-gray-700 dark:text-gray-300 mb-2">To Year (Disabled)</label>
+                  <select
+                    disabled
+                    className="w-full px-3 py-2 bg-gray-100 dark:bg-dark-900 border border-gray-300 dark:border-dark-600 rounded text-gray-600 dark:text-gray-500 cursor-not-allowed"
+                  >
+                    <option value="">Any Year</option>
+                  </select>
+                </div>
+
+                {/* Keyword Filter - DISABLED */}
+                <div>
+                  <label className="block text-sm text-gray-700 dark:text-gray-300 mb-2">Keyword (Disabled)</label>
+                  <input
+                    type="text"
+                    disabled
+                    placeholder="Filter by keyword..."
+                    className="w-full px-3 py-2 bg-gray-100 dark:bg-dark-900 border border-gray-300 dark:border-dark-600 rounded text-gray-600 dark:text-gray-500 cursor-not-allowed"
+                  />
+                </div>
+
+                {/* Title Filter - DISABLED */}
+                <div>
+                  <label className="block text-sm text-gray-700 dark:text-gray-300 mb-2">Title Contains (Disabled)</label>
+                  <input
+                    type="text"
+                    disabled
+                    placeholder="Filter by title..."
+                    className="w-full px-3 py-2 bg-gray-100 dark:bg-dark-900 border border-gray-300 dark:border-dark-600 rounded text-gray-600 dark:text-gray-500 cursor-not-allowed"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>

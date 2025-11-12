@@ -22,38 +22,12 @@ export default function Home() {
   const [lastQuery, setLastQuery] = useState<string>('')
   const [lastFilters, setLastFilters] = useState<SearchFilters | undefined>()
 
-  // Apply filters to search results
+  // Apply filters to search results (author filtering is now server-side via API)
   const applyFilters = (papers: Paper[], filters: SearchFilters) => {
     let filtered = papers
 
-    // Filter by date range
-    if (filters.fromDate) {
-      const fromYear = parseInt(filters.fromDate)
-      filtered = filtered.filter(p => (p.year || 0) >= fromYear)
-    }
-
-    if (filters.toDate) {
-      const toYear = parseInt(filters.toDate)
-      filtered = filtered.filter(p => (p.year || 9999) <= toYear)
-    }
-
-    // Filter by keyword (searches in abstract and title)
-    if (filters.keyword) {
-      const keyword = filters.keyword.toLowerCase()
-      filtered = filtered.filter(
-        p =>
-          p.title.toLowerCase().includes(keyword) ||
-          (p.abstract && p.abstract.toLowerCase().includes(keyword))
-      )
-    }
-
-    // Filter by title
-    if (filters.title) {
-      const titleFilter = filters.title.toLowerCase()
-      filtered = filtered.filter(p => p.title.toLowerCase().includes(titleFilter))
-    }
-
-    // Filter by author (word-based matching)
+    // Author filtering is now handled server-side in the API
+    // This is kept as a fallback for client-side refinement if needed
     if (filters.author) {
       const authorWords = filters.author.toLowerCase().split(/\s+/).filter(w => w.length > 0)
       filtered = filtered.filter(p =>
@@ -77,15 +51,12 @@ export default function Home() {
       // Use "research" as default query if no query provided (for filter-only searches)
       const searchQuery = query.trim() || 'research'
 
-      // Build URL with year filters
+      // Build URL with author filter if provided
       const apiUrl = new URL(`/api/search`, window.location.origin)
       apiUrl.searchParams.append('q', searchQuery)
       apiUrl.searchParams.append('page', page.toString())
-      if (filters?.fromDate) {
-        apiUrl.searchParams.append('fromYear', filters.fromDate)
-      }
-      if (filters?.toDate) {
-        apiUrl.searchParams.append('toYear', filters.toDate)
+      if (filters?.author) {
+        apiUrl.searchParams.append('author', filters.author)
       }
 
       const response = await fetch(apiUrl.toString())

@@ -17,8 +17,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams
     const query = searchParams.get('q')
     const page = searchParams.get('page') || '1'
-    const fromYear = searchParams.get('fromYear')
-    const toYear = searchParams.get('toYear')
+    const author = searchParams.get('author')
 
     if (!query) {
       return NextResponse.json(
@@ -59,20 +58,19 @@ export async function GET(request: NextRequest) {
     }
 
     // Build query URL with parameters
+    let searchQuery = query
+
+    // If author filter is provided, add it to search query
+    if (author) {
+      searchQuery = `${query} ${author}`
+    }
+
     const params = new URLSearchParams({
-      search: query,
+      search: searchQuery,
       sort: 'cited_by_count:desc', // Sort by citations
       per_page: limit.toString(),
       page: pageNum.toString(),
     })
-
-    // Add year filters if provided
-    if (fromYear) {
-      params.append('from_publication_date', `${fromYear}-01-01`)
-    }
-    if (toYear) {
-      params.append('to_publication_date', `${toYear}-12-31`)
-    }
 
     const fullUrl = `${url}?${params.toString()}`
     console.log('OpenAlex Request URL:', fullUrl)
