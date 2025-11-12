@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Paper, AnalysisResult } from '@/app/types'
 import { classifyDocumentType, classifyAcademicField, getFrameworkGuidelines } from '@/app/lib/adaptiveFramework'
 import { buildAssessmentPrompt, buildAbstractOnlyPrompt } from '@/app/lib/promptBuilder'
-import * as pdfParse from 'pdf-parse'
+import JSZip from 'jszip'
 
 // Text extraction from buffer supporting multiple formats
 async function extractTextFromBuffer(buffer: Buffer, mimeType: string, fileName: string): Promise<string> {
@@ -15,6 +15,9 @@ async function extractTextFromBuffer(buffer: Buffer, mimeType: string, fileName:
     // PDF extraction
     if (mimeType.includes('pdf') || fileName.endsWith('.pdf')) {
       try {
+        // Use require() inside function to avoid module resolution issues
+        // eslint-disable-next-line global-require,import/no-dynamic-require
+        const pdfParse = require('pdf-parse/node')
         const pdfData = await pdfParse(buffer)
         const extractedText = pdfData.text || ''
         console.log(`[PDF] Extracted ${extractedText.length} characters from PDF`)
