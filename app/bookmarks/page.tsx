@@ -26,6 +26,22 @@ export default function BookmarksPage() {
     setSelectedAnalysis(analysis)
   }
 
+  const getMaxWeight = (analysis: AnalysisResult) => {
+    return (
+      analysis.credibility.methodologicalRigor.maxScore +
+      analysis.credibility.dataTransparency.maxScore +
+      analysis.credibility.sourceQuality.maxScore +
+      analysis.credibility.authorCredibility.maxScore +
+      analysis.credibility.statisticalValidity.maxScore +
+      analysis.credibility.logicalConsistency.maxScore
+    )
+  }
+
+  const getScorePercentage = (analysis: AnalysisResult) => {
+    const maxWeight = getMaxWeight(analysis)
+    return Math.round((analysis.credibility.totalScore / maxWeight) * 100)
+  }
+
   return (
     <main className="min-h-screen bg-white dark:bg-dark-900 transition-colors">
       {/* Navigation */}
@@ -99,10 +115,10 @@ export default function BookmarksPage() {
                   {/* Credibility Score Badge */}
                   <div className="text-right">
                     <div className="text-2xl font-bold text-accent-blue mb-1">
-                      {bookmark.analysis.credibility.totalScore.toFixed(1)}/10
+                      {bookmark.analysis.credibility.totalScore.toFixed(1)}/{getMaxWeight(bookmark.analysis).toFixed(1)}
                     </div>
                     <div className="text-xs text-gray-400">
-                      {bookmark.analysis.credibility.rating}
+                      {getScorePercentage(bookmark.analysis)}% • {bookmark.analysis.credibility.rating}
                     </div>
                   </div>
                 </div>

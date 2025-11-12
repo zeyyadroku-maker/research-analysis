@@ -131,6 +131,22 @@ Disciplinary Perspective: ${analysis.perspective.disciplinaryPerspective}
     return 'text-red-400'
   }
 
+  const getMaxWeight = () => {
+    return (
+      analysis.credibility.methodologicalRigor.maxScore +
+      analysis.credibility.dataTransparency.maxScore +
+      analysis.credibility.sourceQuality.maxScore +
+      analysis.credibility.authorCredibility.maxScore +
+      analysis.credibility.statisticalValidity.maxScore +
+      analysis.credibility.logicalConsistency.maxScore
+    )
+  }
+
+  const getScorePercentage = () => {
+    const maxWeight = getMaxWeight()
+    return Math.round((analysis.credibility.totalScore / maxWeight) * 100)
+  }
+
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'Low':
@@ -233,7 +249,7 @@ Disciplinary Perspective: ${analysis.perspective.disciplinaryPerspective}
             </div>
 
             <div className={`text-4xl font-bold mb-6 ${getTotalScoreColor(analysis.credibility.totalScore)}`}>
-              {analysis.credibility.totalScore.toFixed(1)}/10
+              {analysis.credibility.totalScore.toFixed(1)}/{getMaxWeight().toFixed(1)} OR {getScorePercentage()}%
               <span className="text-lg ml-2 text-gray-400">({analysis.credibility.rating})</span>
             </div>
 

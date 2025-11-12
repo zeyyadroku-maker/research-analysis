@@ -1,6 +1,7 @@
 'use client'
 
 import { useTheme } from '@/app/providers/ThemeProvider'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 
@@ -10,12 +11,16 @@ interface NavigationProps {
 
 export default function Navigation({ onLogoClick }: NavigationProps) {
   const { theme, toggleTheme } = useTheme()
+  const router = useRouter()
 
   const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault()
+    // Execute manual state reset callback
     if (onLogoClick) {
       onLogoClick()
     }
+    // Navigate to home
+    router.push('/')
   }
 
   return (
