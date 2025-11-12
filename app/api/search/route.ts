@@ -18,6 +18,10 @@ export async function GET(request: NextRequest) {
     const query = searchParams.get('q')
     const page = searchParams.get('page') || '1'
     const author = searchParams.get('author')
+    const keyword = searchParams.get('keyword')
+    const title = searchParams.get('title')
+    const fromYear = searchParams.get('fromYear')
+    const toYear = searchParams.get('toYear')
 
     if (!query) {
       return NextResponse.json(
@@ -30,49 +34,75 @@ export async function GET(request: NextRequest) {
     const pageNum = parseInt(page)
 
     // OpenAlex API endpoint
-    const url = 'https://api.openalex.org/works'
+    const worksUrl = 'https://api.openalex.org/works'
+    const authorsUrl = 'https://api.openalex.org/authors'
 
     // User agent for OpenAlex polite pool
     const userAgent = 'Research-Analysis-Platform (zeyyad-saleh@hotmail.com)'
 
     console.log(`Searching OpenAlex for: "${query}"`)
 
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'User-Agent': userAgent,
-        'Accept': 'application/json',
-      },
-    })
-
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error('OpenAlex API Error:', response.status, errorText.substring(0, 200))
-      return NextResponse.json(
-        {
-          error: `OpenAlex API Error: ${response.status}`,
-          details: errorText.substring(0, 200),
-        },
-        { status: response.status }
-      )
-    }
-
-    // Build query URL with parameters
-    let searchQuery = query
-
-    // If author filter is provided, add it to search query
+    // Step 1: If author filter provided, get the author ID first
+    let authorFilter = ''
     if (author) {
-      searchQuery = `${query} ${author}`
+      console.log(`Looking up author: "${author}"`)
+      const authorSearchUrl = `${authorsUrl}?search=${encodeURIComponent(author)}&per-page=5`
+
+      const authorResponse = await fetch(authorSearchUrl, {
+        headers: {
+          'User-Agent': userAgent,
+          'Accept': 'application/json',
+        },
+      })
+
+      if (authorResponse.ok) {
+        const authorData = await authorResponse.json()
+        const authors = authorData.results || []
+
+        if (authors.length > 0) {
+          // Use the first match's ID for filtering
+          const authorId = authors[0].id
+          authorFilter = `authorships.author.id:${authorId}`
+          console.log(`Found author ID: ${authorId}`)
+        } else {
+          console.log(`No author found matching: "${author}"`)
+          // Return empty results if author not found
+          return NextResponse.json({
+            papers: [],
+            totalHits: 0,
+            hasMore: false,
+            currentPage: pageNum,
+          })
+        }
+      }
     }
 
+    // Step 2: Build the works query with all filters
     const params = new URLSearchParams({
-      search: searchQuery,
+      search: query,
       sort: 'cited_by_count:desc', // Sort by citations
       per_page: limit.toString(),
       page: pageNum.toString(),
     })
 
-    const fullUrl = `${url}?${params.toString()}`
+    // Build filter string
+    const filters: string[] = []
+
+    if (authorFilter) {
+      filters.push(authorFilter)
+    }
+
+    if (fromYear) {
+      filters.push(`publication_year:${fromYear}-${toYear || new Date().getFullYear()}`)
+    } else if (toYear) {
+      filters.push(`publication_year:1900-${toYear}`)
+    }
+
+    if (filters.length > 0) {
+      params.append('filter', filters.join(','))
+    }
+
+    const fullUrl = `${worksUrl}?${params.toString()}`
     console.log('OpenAlex Request URL:', fullUrl)
 
     const fullResponse = await fetch(fullUrl, {

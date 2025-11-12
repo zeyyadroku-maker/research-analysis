@@ -22,12 +22,38 @@ export default function Home() {
   const [lastQuery, setLastQuery] = useState<string>('')
   const [lastFilters, setLastFilters] = useState<SearchFilters | undefined>()
 
-  // Apply filters to search results (author filtering is now server-side via API)
+  // Apply filters to search results (client-side refinement of API results)
   const applyFilters = (papers: Paper[], filters: SearchFilters) => {
     let filtered = papers
 
-    // Author filtering is now handled server-side in the API
-    // This is kept as a fallback for client-side refinement if needed
+    // Filter by date range
+    if (filters.fromYear) {
+      const fromYear = parseInt(filters.fromYear)
+      filtered = filtered.filter(p => (p.year || 0) >= fromYear)
+    }
+
+    if (filters.toYear) {
+      const toYear = parseInt(filters.toYear)
+      filtered = filtered.filter(p => (p.year || 9999) <= toYear)
+    }
+
+    // Filter by keyword (searches in abstract and title)
+    if (filters.keyword) {
+      const keyword = filters.keyword.toLowerCase()
+      filtered = filtered.filter(
+        p =>
+          p.title.toLowerCase().includes(keyword) ||
+          (p.abstract && p.abstract.toLowerCase().includes(keyword))
+      )
+    }
+
+    // Filter by title
+    if (filters.title) {
+      const titleFilter = filters.title.toLowerCase()
+      filtered = filtered.filter(p => p.title.toLowerCase().includes(titleFilter))
+    }
+
+    // Filter by author (word-based matching)
     if (filters.author) {
       const authorWords = filters.author.toLowerCase().split(/\s+/).filter(w => w.length > 0)
       filtered = filtered.filter(p =>
@@ -51,12 +77,24 @@ export default function Home() {
       // Use "research" as default query if no query provided (for filter-only searches)
       const searchQuery = query.trim() || 'research'
 
-      // Build URL with author filter if provided
+      // Build URL with filters
       const apiUrl = new URL(`/api/search`, window.location.origin)
       apiUrl.searchParams.append('q', searchQuery)
       apiUrl.searchParams.append('page', page.toString())
       if (filters?.author) {
         apiUrl.searchParams.append('author', filters.author)
+      }
+      if (filters?.keyword) {
+        apiUrl.searchParams.append('keyword', filters.keyword)
+      }
+      if (filters?.title) {
+        apiUrl.searchParams.append('title', filters.title)
+      }
+      if (filters?.fromYear) {
+        apiUrl.searchParams.append('fromYear', filters.fromYear)
+      }
+      if (filters?.toYear) {
+        apiUrl.searchParams.append('toYear', filters.toYear)
       }
 
       const response = await fetch(apiUrl.toString())
@@ -177,13 +215,8 @@ export default function Home() {
         {/* Error Message */}
         {error && (
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4 mb-6 text-red-700 dark:text-red-200 animate-slide-up">
-            <div className="flex gap-3 justify-between items-start">
-              <div className="flex gap-3">
-                <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
-                <span>{error}</span>
-              </div>
+            <div className="flex gap-3 justify-between items-center">
+              <span className="flex-1">{error}</span>
               <button
                 onClick={() => setError(null)}
                 className="flex-shrink-0 ml-4 text-red-700 dark:text-red-200 hover:text-red-900 dark:hover:text-red-100 transition-colors"
