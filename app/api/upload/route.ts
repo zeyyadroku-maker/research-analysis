@@ -33,7 +33,20 @@ async function extractTextFromBuffer(buffer: Buffer, mimeType: string, fileName:
         }
         const pdfData = await pdfParse(buffer)
         const extractedText = pdfData.text || ''
-        console.log(`[Extract SUCCESS] PDF: Extracted ${extractedText.length} characters from PDF (pages: ${pdfData.numpages || '?'})`)
+        const numPages = pdfData.numpages || 0
+        const fileSizeKb = (buffer.length / 1024).toFixed(2)
+        const textToSizeRatio = buffer.length > 0 ? ((extractedText.length / buffer.length) * 100).toFixed(2) : '0'
+
+        // Log diagnostic metrics for quality assessment
+        console.log(`[Extract SUCCESS] PDF: Extracted ${extractedText.length} chars from ${numPages} pages (file: ${fileSizeKb}KB, ratio: ${textToSizeRatio}%)`)
+
+        // Log additional diagnostic info if text extraction seems low
+        if (extractedText.length < 500) {
+          console.warn(`[Extract DIAGNOSTIC] PDF: Very low text extraction (${extractedText.length} chars). Possible causes: scan-based PDF, image-heavy content, OCR required`)
+        } else if (parseFloat(textToSizeRatio) < 10) {
+          console.warn(`[Extract DIAGNOSTIC] PDF: Low text-to-size ratio (${textToSizeRatio}%). File may contain images, diagrams, or schemas not extracted by text parser`)
+        }
+
         return extractedText
       } catch (pdfError) {
         const errorMsg = pdfError instanceof Error ? pdfError.message : String(pdfError)
