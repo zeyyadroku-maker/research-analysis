@@ -15,7 +15,7 @@ interface DetailedAnalysisViewProps {
 
 export default function DetailedAnalysisView({ analysis, onClose }: DetailedAnalysisViewProps) {
   const [isBookmarkedState, setIsBookmarkedState] = useState(false)
-  const [notes, setNotes] = useState('')
+  const [notes] = useState('')
 
   useEffect(() => {
     setIsBookmarkedState(isBookmarked(analysis.paper.id))

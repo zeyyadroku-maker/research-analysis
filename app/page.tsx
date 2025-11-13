@@ -13,7 +13,6 @@ type TabType = 'search' | 'upload'
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<TabType>('search')
-  const [searchResults, setSearchResults] = useState<Paper[]>([])
   const [filteredResults, setFilteredResults] = useState<Paper[]>([])
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null)
   const [isSearching, setIsSearching] = useState(false)
@@ -113,7 +112,7 @@ export default function Home() {
         throw new Error('Invalid response format from server')
       }
 
-      setSearchResults(data.papers)
+      setFilteredResults(data.papers)
       setTotalHits(data.totalHits || 0)
       setHasMore(data.hasMore || false)
       setCurrentPage(page)
@@ -153,7 +152,7 @@ export default function Home() {
 
   const handleLogoClick = () => {
     // Clear all search and filter state
-    setSearchResults([])
+    setFilteredResults([])
     setFilteredResults([])
     setAnalysis(null)
     setError(null)

@@ -17,16 +17,6 @@ const scoreColor = (score: number, maxScore: number): string => {
   return 'bg-red-500'
 }
 
-const scoreRating = (score: number, maxScore: number): string => {
-  const percentage = (score / maxScore) * 100
-
-  if (percentage >= 80) return 'Excellent'
-  if (percentage >= 60) return 'Good'
-  if (percentage >= 40) return 'Fair'
-  if (percentage >= 20) return 'Poor'
-  return 'Very Poor'
-}
-
 export default function FrameworkAssessmentView({
   framework,
   collapsed = false,

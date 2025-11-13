@@ -18,8 +18,6 @@ export async function GET(request: NextRequest) {
     const query = searchParams.get('q')
     const page = searchParams.get('page') || '1'
     const author = searchParams.get('author')
-    const keyword = searchParams.get('keyword')
-    const title = searchParams.get('title')
     const fromYear = searchParams.get('fromYear')
     const toYear = searchParams.get('toYear')
 

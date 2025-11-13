@@ -70,7 +70,6 @@ export function classifyDocumentType(text: string, title?: string): DocumentType
   const hasResults = combined.match(/result|finding|outcome|data|show|demonstrate|evidence|conclude/)
   const hasDiscussion = combined.match(/discussion|implication|limitation|interpret|analyse|analyze|significance/)
   const hasConclusion = combined.match(/conclusion|summary|concluding|conclude|final remark|future work|implication/)
-  const hasReferences = combined.match(/reference|bibliography|citation|cited/) && (combined.match(/references/g) || []).length > 5
 
   // Preprint/ArXiv - check early and specific
   if (combined.match(/preprint|arxiv|not peer-reviewed|eprint/) || title?.includes('arXiv')) {
@@ -256,10 +255,10 @@ export function getFrameworkGuidelines(
   field: AcademicField
 ): FrameworkGuidelines {
   const weights = getWeightsForCombination(docType, field)
-  const biasPriorities = getBiasPriorities(docType, field)
-  const assessmentFocus = getAssessmentFocus(docType, field)
-  const limitations = getTypicalLimitations(docType, field)
-  const assumptions = getCommonAssumptions(docType, field)
+  const biasPriorities = getBiasPriorities(field)
+  const assessmentFocus = getAssessmentFocus(docType)
+  const limitations = getTypicalLimitations(docType)
+  const assumptions = getCommonAssumptions(field)
 
   return {
     documentType: docType,
@@ -467,7 +466,7 @@ function getWeightsForCombination(docType: DocumentType, field: AcademicField): 
 /**
  * Get field-specific bias assessment priorities
  */
-function getBiasPriorities(docType: DocumentType, field: AcademicField): string[] {
+function getBiasPriorities(field: AcademicField): string[] {
   const basePriorities: Record<AcademicField, string[]> = {
     'natural-sciences': [
       'Selection bias in experimental design',
@@ -525,7 +524,7 @@ function getBiasPriorities(docType: DocumentType, field: AcademicField): string[
 /**
  * Get specific assessment focus areas
  */
-function getAssessmentFocus(docType: DocumentType, field: AcademicField): string[] {
+function getAssessmentFocus(docType: DocumentType): string[] {
   const focus: Record<DocumentType, string[]> = {
     'article': [
       'Study design appropriateness',
@@ -612,7 +611,7 @@ function getAssessmentFocus(docType: DocumentType, field: AcademicField): string
 /**
  * Get common limitations for document type and field
  */
-function getTypicalLimitations(docType: DocumentType, field: AcademicField): string[] {
+function getTypicalLimitations(docType: DocumentType): string[] {
   const limitations: Record<DocumentType, string[]> = {
     'article': [
       'Limited to single study outcomes',
@@ -679,7 +678,7 @@ function getTypicalLimitations(docType: DocumentType, field: AcademicField): str
 /**
  * Get common assumptions for document type and field
  */
-function getCommonAssumptions(docType: DocumentType, field: AcademicField): string[] {
+function getCommonAssumptions(field: AcademicField): string[] {
   const assumptions: Record<AcademicField, string[]> = {
     'natural-sciences': [
       'Replicability of results under controlled conditions',

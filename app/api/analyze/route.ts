@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
         try {
           // Try to process as PDF
           if (doc.source.type === 'arxiv' || doc.mimeType.includes('pdf')) {
-            const processed = await processPdfDocument(doc.content, {
+            const processed = await processPdfDocument({
               title: paper.title,
               authors: paper.authors,
               abstract: paper.abstract,

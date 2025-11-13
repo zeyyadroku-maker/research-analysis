@@ -146,7 +146,6 @@ export default function FileUploadTab({
         year: new Date().getFullYear(),
         url: '',
         publicationDate: new Date().toISOString().split('T')[0],
-        publicationType: 'article',
         doi: '',
       }
 

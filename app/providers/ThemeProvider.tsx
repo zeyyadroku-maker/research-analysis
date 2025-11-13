@@ -11,23 +11,8 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 
-// Script to prevent flash - runs before React hydration
-const themeScript = `
-  try {
-    const savedTheme = localStorage.getItem('theme-preference');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
-    if (initialTheme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  } catch (e) {}
-`
-
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>('light')
-  const [isMounted, setIsMounted] = useState(false)
 
   // Load theme from localStorage on mount (before paint)
   useLayoutEffect(() => {
@@ -38,7 +23,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light')
     setTheme(initialTheme)
     applyTheme(initialTheme)
-    setIsMounted(true)
   }, [])
 
   // Apply theme to DOM

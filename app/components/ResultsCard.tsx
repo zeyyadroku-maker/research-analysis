@@ -1,7 +1,6 @@
 'use client'
 
 import { Paper } from '@/app/types'
-import { useState } from 'react'
 import DocumentTypeIndicator from './DocumentTypeIndicator'
 
 interface ResultsCardProps {
@@ -11,8 +10,6 @@ interface ResultsCardProps {
 }
 
 export default function ResultsCard({ paper, onAnalyze, isAnalyzing = false }: ResultsCardProps) {
-  const [isHovered, setIsHovered] = useState(false)
-
   const truncateText = (text: string, maxLength: number) => {
     if (text.length <= maxLength) return text
     return text.substring(0, maxLength) + '...'
@@ -26,8 +23,6 @@ export default function ResultsCard({ paper, onAnalyze, isAnalyzing = false }: R
 
   return (
     <div
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       onClick={handleCardClick}
       className={`bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg p-5 hover:border-blue-500 dark:hover:border-accent-blue transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20 group animate-slide-up ${paper.url ? 'cursor-pointer' : ''}`}
     >

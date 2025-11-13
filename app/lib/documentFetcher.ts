@@ -225,18 +225,10 @@ async function fetchFromDirectUrl(url: string): Promise<FetchedDocument | null> 
 }
 
 /**
- * Extract DOI from various formats
- */
-function extractDoi(text: string): string | null {
-  const matches = text.match(/(?:doi\.org\/|doi:|https?:\/\/doi\.org\/)?(10\.\S+)/i)
-  return matches ? matches[1] : null
-}
-
-/**
  * Fetch a document using multiple strategies
  * Tries different sources in order of reliability and likelihood
  */
-export async function fetchDocument(paperId: string, paperData: {
+export async function fetchDocument(paperData: {
   openAlexId?: string
   doi?: string
   url?: string
@@ -294,7 +286,7 @@ export async function fetchDocumentSafe(
   maxSizeBytes: number = 50 * 1024 * 1024 // 50MB default limit
 ): Promise<FetchedDocument | null> {
   try {
-    const doc = await fetchDocument(paperId, paperData)
+    const doc = await fetchDocument(paperData)
 
     if (doc && doc.size > maxSizeBytes) {
       console.warn(`Document too large (${doc.size} bytes), skipping`, paperId)

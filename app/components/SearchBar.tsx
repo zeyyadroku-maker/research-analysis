@@ -170,7 +170,7 @@ export default function SearchBar({ onSearch, isLoading = false }: SearchBarProp
               >
                 <option value="">Any Year</option>
                 {Array.from({ length: new Date().getFullYear() - 1899 }, (_, i) => new Date().getFullYear() - i).map((year) => {
-                  const isDisabled = toYear && year > parseInt(toYear)
+                  const isDisabled = !!(toYear && year > parseInt(toYear))
                   return (
                     <option key={year} value={year} disabled={isDisabled}>
                       {year}
@@ -195,7 +195,7 @@ export default function SearchBar({ onSearch, isLoading = false }: SearchBarProp
               >
                 <option value="">Any Year</option>
                 {Array.from({ length: new Date().getFullYear() - 1899 }, (_, i) => new Date().getFullYear() - i).map((year) => {
-                  const isDisabled = fromYear && year < parseInt(fromYear)
+                  const isDisabled = !!(fromYear && year < parseInt(fromYear))
                   return (
                     <option key={year} value={year} disabled={isDisabled}>
                       {year}

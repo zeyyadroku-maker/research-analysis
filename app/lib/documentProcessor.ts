@@ -30,7 +30,7 @@ export interface DocumentMetadata {
 /**
  * Extract text from PDF buffer (simplified - no pdf-parse)
  */
-export async function extractPdfText(pdfBuffer: Buffer): Promise<{
+export async function extractPdfText(): Promise<{
   text: string
   pageCount: number
 }> {
@@ -176,11 +176,10 @@ export function chunkDocument(
  * 4. Return structured document
  */
 export async function processPdfDocument(
-  pdfBuffer: Buffer,
   metadata?: Partial<DocumentMetadata>
 ): Promise<ProcessedDocument> {
   // Extract text from PDF
-  const { text: rawText, pageCount } = await extractPdfText(pdfBuffer)
+  const { text: rawText, pageCount } = await extractPdfText()
 
   // Normalize the extracted text
   const fullText = normalizeText(rawText)
