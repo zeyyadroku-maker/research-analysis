@@ -42,7 +42,20 @@
       "Bash(git push:*)",
       "Bash(vercel --prod:*)",
       "Bash(vercel --yes --prod:*)",
-      "Bash(timeout 10 vercel login:*)"
+      "Bash(timeout 10 vercel login:*)",
+      "Bash(gh repo view:*)",
+      "Bash(timeout 120 npm run dev:*)",
+      "Bash(timeout:*)",
+      "Bash(del /F /S /Q .next 2)",
+      "Bash(del /F /S /Q node_modules.cache 2)",
+      "Bash(node -c:*)",
+      "Bash(for i in {1..40})",
+      "Bash(do if timeout 2 curl -s http://localhost:3000)",
+      "Bash(then echo \"✓ Server ready on http://localhost:3000\")",
+      "Bash(then echo \"✓ Server ready on http://localhost:3003\")",
+      "Bash(for:*)",
+      "Bash(then echo \"✓✓✓ SERVER READY ON PORT 3000 ✓✓✓\")",
+      "Bash(if exist .next rmdir /s /q .next)"
     ],
     "deny": [],
     "ask": []
