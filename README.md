@@ -4,8 +4,8 @@ An AI-powered research paper analysis platform that helps you understand credibi
 
 ## Features
 
-- 🔍 **Search Research Papers**: Search from the CORE API database with millions of papers
-- 🤖 **AI-Powered Analysis**: Uses Groq LLM to analyze papers using a comprehensive framework
+- 🔍 **Search Research Papers**: Search from the OpenAlex database with millions of papers
+- 🤖 **AI-Powered Analysis**: Uses Claude API to analyze papers using a comprehensive adaptive framework
 - 📊 **Credibility Assessment**: Evaluates papers on methodological rigor, transparency, source quality, author credentials, statistical validity, and logical consistency (0-10 scale)
 - ⚠️ **Bias Detection**: Identifies multiple types of bias including selection, confirmation, publication, reporting, funding, citation, demographic, and measurement bias
 - 📈 **Key Findings Extraction**: Automatically extracts research fundamentals, methodology, findings, limitations, and conclusions
@@ -17,8 +17,8 @@ An AI-powered research paper analysis platform that helps you understand credibi
 - **Frontend**: Next.js 15 with React 19
 - **Styling**: Tailwind CSS v3
 - **APIs**:
-  - CORE API (paper database)
-  - Groq API (LLM analysis)
+  - OpenAlex API (paper database)
+  - Anthropic Claude API (LLM analysis)
 - **State Management**: React hooks with localStorage for bookmarks
 
 ## Prerequisites
@@ -38,13 +38,13 @@ cd research-analysis
 npm install
 ```
 
-3. Create environment variables (already configured in `.env.local`):
+3. Create `.env.local` file in the project root with your API keys:
 ```bash
-NEXT_PUBLIC_CORE_API_KEY=c784JlxHSmNoTI2nsqwjruAzpCBt5vZd
-GROQ_API_KEY=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
+# Copy from .env.example and fill in your actual keys
+CLAUDE_API_KEY=sk-ant-...
 ```
 
-> **Note**: The Groq API key provided is a placeholder. If it doesn't work, update it with a valid key in `.env.local`
+> **Note**: Never commit `.env.local` to git. Add your actual API keys only in the local `.env.local` file.
 
 ## Running the Application
 
@@ -100,7 +100,7 @@ app/
 ## API Endpoints
 
 ### POST /api/search
-Searches for papers using the CORE API.
+Searches for papers using the OpenAlex API.
 
 **Query Parameters:**
 - `q` (required): Search query
@@ -117,7 +117,7 @@ Searches for papers using the CORE API.
 ```
 
 ### POST /api/analyze
-Analyzes a paper using the Groq LLM with the comprehensive framework.
+Analyzes a paper using the Claude API with the comprehensive adaptive framework.
 
 **Request Body:**
 ```json
@@ -180,11 +180,15 @@ The AI analysis uses a comprehensive framework that includes:
 ## Customization
 
 ### Update API Keys
-Edit `.env.local` to use different API keys:
+Create or edit `.env.local` with your API keys (never commit this file):
 ```bash
-NEXT_PUBLIC_CORE_API_KEY=your_core_api_key
-GROQ_API_KEY=your_groq_api_key
+# Required for Claude API analysis
+CLAUDE_API_KEY=sk-ant-...
+
+# Optional - for future features
+# OPENAI_API_KEY=sk-...
 ```
+See `.env.example` for the template format.
 
 ### Styling
 - Tailwind configuration: `tailwind.config.ts`
@@ -192,24 +196,25 @@ GROQ_API_KEY=your_groq_api_key
 - Color scheme is defined in the Tailwind config
 
 ### LLM Model
-To change the Groq model, update `app/api/analyze/route.ts`:
+To change the Claude model, update `app/api/analyze/route.ts`:
 ```typescript
-model: 'mixtral-8x7b-32768', // Change this line
+model: 'claude-3-5-haiku-20241022', // Change this line
 ```
+See [Anthropic documentation](https://docs.anthropic.com/claude/reference/getting-started-with-the-api) for available models.
 
 ## Performance Considerations
 
-- Papers are fetched on-demand from CORE API
-- Analysis requests are sent to Groq LLM (may take a few seconds)
+- Papers are fetched on-demand from OpenAlex API
+- Analysis requests are sent to Claude API (may take a few seconds)
 - Bookmarks are stored in browser localStorage
 - Consider implementing pagination for large search results
 
 ## Limitations
 
-- Analysis quality depends on Groq LLM capabilities
-- Full-text analysis currently uses paper abstract instead of full text
+- Analysis quality depends on Claude API capabilities
+- Full-text document analysis is available when full text is provided
 - Bookmarks are stored locally in the browser (not synced across devices)
-- CORE API may have rate limits
+- OpenAlex API may have rate limits
 
 ## Future Enhancements
 
@@ -231,14 +236,14 @@ model: 'mixtral-8x7b-32768', // Change this line
 - Try regenerating the API keys from the provider dashboards
 
 ### Slow Analysis
-- The Groq LLM analysis can take 10-30 seconds per paper
+- Claude API analysis can take 10-30 seconds per paper
 - This is normal behavior for comprehensive analysis
 - Consider implementing a progress bar for better UX
 
 ### No Search Results
 - Try simpler search terms
-- Check the CORE API is responsive
-- Verify the CORE API key is valid
+- Check the OpenAlex API is responsive
+- Verify you have internet connectivity
 
 ## License
 
