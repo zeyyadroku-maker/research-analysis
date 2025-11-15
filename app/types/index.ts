@@ -11,7 +11,10 @@ export interface Paper {
   year?: number
   coreId?: string
   documentType?: string // From OpenAlex: 'article', 'book', 'preprint', etc.
-  field?: string // Academic field classification
+  field?: string // Primary field classification from OpenAlex
+  subfield?: string // Subfield classification from OpenAlex
+  domain?: string // Domain classification from OpenAlex
+  topics?: string[] // Research topics from OpenAlex
   citationCount?: number // Citation count from OpenAlex
   openAccessStatus?: boolean // Whether paper is open access
   openAlexId?: string // OpenAlex work ID

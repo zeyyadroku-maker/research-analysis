@@ -7,6 +7,7 @@ import DocumentTypeIndicator from './DocumentTypeIndicator'
 import FrameworkAssessmentView from './FrameworkAssessmentView'
 import AIDisclaimerBanner from './AIDisclaimerBanner'
 import { getFrameworkGuidelines } from '@/app/lib/adaptiveFramework'
+import { FolderDown, X } from 'lucide-react'
 
 interface DetailedAnalysisViewProps {
   analysis: AnalysisResult
@@ -180,24 +181,22 @@ Disciplinary Perspective: ${analysis.perspective.disciplinaryPerspective}
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 overflow-y-auto">
-      {/* Floating Close Button */}
-      <button
-        onClick={onClose}
-        className="fixed top-8 right-8 z-50 bg-dark-800 border border-dark-700 text-gray-400 hover:text-white hover:bg-dark-700 transition-colors p-2 rounded-lg"
-        title="Close (Esc)"
-      >
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
-
       <div className="min-h-screen py-8 px-4">
         <div className="max-w-4xl mx-auto">
           {/* AI Disclaimer Banner */}
           <AIDisclaimerBanner compact={true} />
 
           {/* Header */}
-          <div className="bg-dark-800 border border-dark-700 rounded-lg p-8 mb-6">
+          <div className="bg-dark-800 border border-dark-700 rounded-lg p-8 mb-6 relative">
+            {/* Close Button */}
+            <button
+              onClick={onClose}
+              className="absolute top-4 right-4 bg-dark-700 border border-dark-600 text-gray-400 hover:text-white hover:bg-dark-600 transition-colors p-2 rounded-lg"
+              title="Close (Esc)"
+            >
+              <X size={24} />
+            </button>
+
             <div className="flex justify-between items-start mb-6">
               <div className="flex-1">
                 <h1 className="text-3xl font-bold text-white mb-2">{analysis.paper.title}</h1>
@@ -232,9 +231,7 @@ Disciplinary Perspective: ${analysis.perspective.disciplinaryPerspective}
                 onClick={handleExportAnalysis}
                 className="px-4 py-2 rounded font-medium transition-all duration-200 flex items-center gap-2 bg-dark-700 text-gray-300 hover:text-white hover:bg-dark-600"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2m0 0v-8m0 8H3m12 0h9M6.3 5.7L3 9m0 0l3.3 3.3M3 9h18m0 0l-3.3-3.3M21 9l-3.3 3.3" />
-                </svg>
+                <FolderDown size={20} />
                 Export
               </button>
 
@@ -246,10 +243,12 @@ Disciplinary Perspective: ${analysis.perspective.disciplinaryPerspective}
           </div>
 
           {/* Document Type & Classification */}
-          {analysis.paper.documentType && analysis.paper.field && (
+          {analysis.paper.documentType && (
             <DocumentTypeIndicator
-              documentType={analysis.paper.documentType as any}
-              field={analysis.paper.field as any}
+              documentTypeString={analysis.paper.documentType}
+              field={analysis.paper.field}
+              subfield={analysis.paper.subfield}
+              domain={analysis.paper.domain}
             />
           )}
 

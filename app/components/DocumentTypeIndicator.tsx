@@ -1,14 +1,17 @@
 'use client'
 
-import { DocumentType, AcademicField } from '@/app/lib/adaptiveFramework'
+import { DocumentType } from '@/app/lib/adaptiveFramework'
 
 interface DocumentTypeIndicatorProps {
-  documentType: DocumentType
-  field: AcademicField
+  documentType?: DocumentType
+  documentTypeString?: string // Direct document type from OpenAlex
+  field?: string // OpenAlex field (takes precedence)
+  subfield?: string // OpenAlex subfield
+  domain?: string // OpenAlex domain
   compact?: boolean
 }
 
-const documentTypeLabels: Record<DocumentType, { label: string; color: string }> = {
+const documentTypeLabels: Record<string, { label: string; color: string }> = {
   article: { label: 'Research Article', color: 'bg-blue-500' },
   review: { label: 'Literature Review', color: 'bg-purple-500' },
   book: { label: 'Book', color: 'bg-amber-500' },
@@ -22,24 +25,19 @@ const documentTypeLabels: Record<DocumentType, { label: string; color: string }>
   unknown: { label: 'Unknown Type', color: 'bg-gray-500' },
 }
 
-const fieldLabels: Record<AcademicField, { label: string }> = {
-  'natural-sciences': { label: 'Natural Sciences' },
-  'engineering': { label: 'Engineering & Technology' },
-  'medical': { label: 'Medical Sciences' },
-  'agricultural': { label: 'Agricultural Sciences' },
-  'social-sciences': { label: 'Social Sciences' },
-  'humanities': { label: 'Humanities' },
-  'formal-sciences': { label: 'Formal Sciences' },
-  'interdisciplinary': { label: 'Interdisciplinary' },
-}
-
 export default function DocumentTypeIndicator({
   documentType,
+  documentTypeString,
   field,
+  subfield,
+  domain,
   compact = false,
 }: DocumentTypeIndicatorProps) {
-  const docInfo = documentTypeLabels[documentType] || documentTypeLabels.unknown
-  const fieldInfo = fieldLabels[field] || fieldLabels.interdisciplinary
+  const docTypeKey = documentTypeString || documentType || 'unknown'
+  const docInfo = documentTypeLabels[docTypeKey] || documentTypeLabels.unknown
+
+  // Use OpenAlex field if available, otherwise show domain/subfield
+  const fieldDisplay = field || subfield || domain || 'Multidisciplinary'
 
   if (compact) {
     return (
@@ -50,8 +48,8 @@ export default function DocumentTypeIndicator({
         >
           {docInfo.label}
         </span>
-        <span className="px-3 py-1 rounded text-xs font-semibold bg-gray-600 text-white" title={fieldInfo.label}>
-          {fieldInfo.label}
+        <span className="px-3 py-1 rounded text-xs font-semibold bg-gray-600 text-white" title={fieldDisplay}>
+          {fieldDisplay}
         </span>
       </div>
     )
@@ -73,15 +71,15 @@ export default function DocumentTypeIndicator({
             <div className="flex items-center gap-3">
               <div className="w-2 h-2 rounded-full bg-accent-blue"></div>
               <div>
-                <span className="text-sm font-medium text-white">{fieldInfo.label}</span>
+                <span className="text-sm font-medium text-white">{fieldDisplay}</span>
                 <span className="text-xs text-gray-500 ml-2">Field</span>
               </div>
             </div>
           </div>
         </div>
         <div className="text-right">
-          <p className="text-xs font-medium text-accent-blue">Adaptive Framework</p>
-          <p className="text-xs text-gray-500 mt-1">Tailored assessment</p>
+          <p className="text-xs font-medium text-accent-blue">OpenAlex Classification</p>
+          <p className="text-xs text-gray-500 mt-1">From API metadata</p>
         </div>
       </div>
     </div>

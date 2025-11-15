@@ -33,13 +33,29 @@ export default function ResultsCard({ paper, onAnalyze, isAnalyzing = false }: R
         </h3>
 
         {/* Document Type Badge */}
-        {paper.documentType && paper.field && (
+        {paper.documentType && (
           <div className="mb-3">
             <DocumentTypeIndicator
-              documentType={paper.documentType as any}
-              field={paper.field as any}
+              documentTypeString={paper.documentType}
+              field={paper.field}
+              subfield={paper.subfield}
+              domain={paper.domain}
               compact={true}
             />
+          </div>
+        )}
+
+        {/* Topics */}
+        {paper.topics && paper.topics.length > 0 && (
+          <div className="mb-3 flex flex-wrap gap-1">
+            {paper.topics.slice(0, 3).map((topic, idx) => (
+              <span
+                key={idx}
+                className="inline-block px-2 py-1 rounded text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+              >
+                {topic}
+              </span>
+            ))}
           </div>
         )}
 

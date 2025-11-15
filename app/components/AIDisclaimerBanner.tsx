@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { Info } from 'lucide-react'
 
 interface AIDisclaimerBannerProps {
   compact?: boolean
@@ -13,9 +14,7 @@ export default function AIDisclaimerBanner({ compact = false }: AIDisclaimerBann
     <div className="bg-gradient-to-r from-blue-900/40 to-blue-800/40 border border-blue-700/60 rounded-lg p-4 mb-6">
       <div className="flex items-start gap-3">
         <div className="flex-shrink-0 mt-0.5">
-          <svg className="w-5 h-5 text-blue-300" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zm-11-1a1 1 0 11-2 0 1 1 0 012 0zm3 0a1 1 0 11-2 0 1 1 0 012 0zm3 0a1 1 0 11-2 0 1 1 0 012 0z" clipRule="evenodd" />
-          </svg>
+          <Info size={20} className="text-blue-300" />
         </div>
         <div className="flex-1">
           <div className="flex items-center justify-between">

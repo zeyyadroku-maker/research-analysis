@@ -138,6 +138,8 @@ export async function GET(request: NextRequest) {
       .filter((p: any) => p && p.title) // Filter out invalid entries
       .map((p: any) => {
         const authors = p.authorships || []
+        const primaryTopic = p.primary_topic
+
         return {
           id: p.id || hashString(p.title || 'unknown'),
           title: p.title || 'Untitled',
@@ -150,7 +152,10 @@ export async function GET(request: NextRequest) {
           url: p.primary_location?.pdf_url || p.primary_location?.landing_page_url || p.doi || undefined,
           year: p.publication_year,
           documentType: p.type || 'article', // article, preprint, etc.
-          field: extractPrimaryField(p.primary_topic),
+          field: primaryTopic?.display_name || extractPrimaryField(primaryTopic),
+          subfield: primaryTopic?.level1_name || undefined,
+          domain: primaryTopic?.level0_name || undefined,
+          topics: p.topics?.slice(0, 5).map((t: any) => t.display_name).filter(Boolean) || [],
           citationCount: p.cited_by_count || 0,
           openAccessStatus: p.open_access?.is_oa || false,
           openAlexId: p.id,
