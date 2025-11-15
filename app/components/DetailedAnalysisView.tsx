@@ -6,6 +6,7 @@ import { saveBookmark, removeBookmark, isBookmarked } from '@/app/lib/bookmarks'
 import DocumentTypeIndicator from './DocumentTypeIndicator'
 import FrameworkAssessmentView from './FrameworkAssessmentView'
 import DocumentExtractionIndicator from './DocumentExtractionIndicator'
+import AIDisclaimerBanner from './AIDisclaimerBanner'
 import { getFrameworkGuidelines } from '@/app/lib/adaptiveFramework'
 
 interface DetailedAnalysisViewProps {
@@ -160,10 +161,20 @@ Disciplinary Perspective: ${analysis.perspective.disciplinaryPerspective}
     }
   }
 
+  const getConfidenceBadgeColor = (confidence: number) => {
+    if (confidence >= 80) return 'bg-green-500 text-white'
+    if (confidence >= 60) return 'bg-blue-500 text-white'
+    if (confidence >= 40) return 'bg-yellow-500 text-white'
+    return 'bg-orange-500 text-white'
+  }
+
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 overflow-y-auto">
       <div className="min-h-screen py-8 px-4">
         <div className="max-w-4xl mx-auto">
+          {/* AI Disclaimer Banner */}
+          <AIDisclaimerBanner compact={true} />
+
           {/* Header */}
           <div className="bg-dark-800 border border-dark-700 rounded-lg p-8 mb-6 animate-slide-up">
             <div className="flex justify-between items-start mb-6">
@@ -263,11 +274,18 @@ Disciplinary Perspective: ${analysis.perspective.disciplinaryPerspective}
                 { key: 'logicalConsistency', component: analysis.credibility.logicalConsistency },
               ].map(({ key, component }) => (
                 <div key={key} className="bg-dark-700 rounded p-4">
-                  <div className="flex justify-between items-center mb-2">
+                  <div className="flex justify-between items-start mb-2">
                     <span className="font-medium text-gray-200">{component.name}</span>
-                    <span className="text-sm font-bold text-accent-blue">
-                      {component.score}/{component.maxScore}
-                    </span>
+                    <div className="flex gap-2 items-center">
+                      <span className="text-sm font-bold text-accent-blue">
+                        {component.score}/{component.maxScore}
+                      </span>
+                      {component.confidence && (
+                        <span className={`text-xs font-bold px-2 py-1 rounded ${getConfidenceBadgeColor(component.confidence)}`}>
+                          {component.confidence}%
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="w-full bg-dark-600 rounded h-2 overflow-hidden">
                     <div
@@ -276,6 +294,11 @@ Disciplinary Perspective: ${analysis.perspective.disciplinaryPerspective}
                     ></div>
                   </div>
                   <p className="text-xs text-gray-400 mt-2">{component.description}</p>
+                  {component.reasoning && (
+                    <div className="bg-dark-800 rounded p-2 mt-2 border-l-2 border-accent-blue">
+                      <p className="text-xs text-gray-300 italic">{component.reasoning}</p>
+                    </div>
+                  )}
                   {component.evidence.length > 0 && (
                     <ul className="text-xs text-gray-400 mt-2 space-y-1">
                       {component.evidence.slice(0, 2).map((e, i) => (
@@ -317,13 +340,86 @@ Disciplinary Perspective: ${analysis.perspective.disciplinaryPerspective}
                 <div key={index} className={`border rounded p-4 ${getSeverityColor(bias.severity)}`}>
                   <div className="flex justify-between items-start mb-2">
                     <span className="font-semibold">{bias.type} Bias</span>
-                    <span className="text-xs font-bold uppercase">{bias.severity}</span>
+                    <div className="flex gap-2 items-center">
+                      <span className="text-xs font-bold uppercase">{bias.severity}</span>
+                      {bias.confidence !== undefined && (
+                        <span className={`text-xs font-bold px-2 py-1 rounded ${getConfidenceBadgeColor(bias.confidence)}`}>
+                          {bias.confidence}%
+                        </span>
+                      )}
+                      {bias.verifiable !== undefined && (
+                        <span className={`text-xs font-bold px-2 py-1 rounded ${bias.verifiable ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
+                          {bias.verifiable ? 'Verifiable' : 'Unverifiable'}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <p className="text-sm">{bias.evidence}</p>
                 </div>
               ))}
             </div>
           </div>
+
+          {/* AI Analysis Limitations */}
+          {analysis.limitations && (
+            <div className="bg-amber-900/20 border border-amber-700 rounded-lg p-6 mb-6 animate-slide-up">
+              <div className="flex items-center gap-3 mb-4">
+                <svg className="w-6 h-6 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                <h2 className="text-2xl font-bold text-amber-200">AI Analysis Limitations</h2>
+              </div>
+
+              {analysis.limitations.aiConfidenceNote && (
+                <div className="bg-dark-800 rounded p-4 mb-4 border border-amber-700">
+                  <p className="text-sm text-amber-100">{analysis.limitations.aiConfidenceNote}</p>
+                </div>
+              )}
+
+              {analysis.limitations.dataLimitations && analysis.limitations.dataLimitations.length > 0 && (
+                <div className="mb-4">
+                  <h3 className="font-semibold text-amber-200 mb-2">Data Limitations</h3>
+                  <ul className="space-y-1">
+                    {analysis.limitations.dataLimitations.map((limitation, i) => (
+                      <li key={i} className="flex gap-2 text-sm text-amber-100">
+                        <span className="text-amber-400 flex-shrink-0">•</span>
+                        <span>{limitation}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {analysis.limitations.uncertainties && analysis.limitations.uncertainties.length > 0 && (
+                <div className="mb-4">
+                  <h3 className="font-semibold text-amber-200 mb-2">Low Confidence Areas</h3>
+                  <ul className="space-y-1">
+                    {analysis.limitations.uncertainties.map((uncertainty, i) => (
+                      <li key={i} className="flex gap-2 text-sm text-amber-100">
+                        <span className="text-amber-400 flex-shrink-0">!</span>
+                        <span>{uncertainty}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {analysis.limitations.unverifiableClaims && analysis.limitations.unverifiableClaims.length > 0 && (
+                <div>
+                  <h3 className="font-semibold text-amber-200 mb-2">&quot;I Don&apos;t Know&quot; Claims</h3>
+                  <div className="space-y-2">
+                    {analysis.limitations.unverifiableClaims.map((claim, i) => (
+                      <div key={i} className="bg-dark-700 rounded p-3 border-l-2 border-red-500">
+                        <p className="text-sm font-medium text-amber-100 mb-1">{claim.claim}</p>
+                        <p className="text-xs text-gray-400">Reason: {claim.reason}</p>
+                        <p className="text-xs text-gray-500">Affects: {claim.section}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Key Findings */}
           <div className="bg-dark-800 border border-dark-700 rounded-lg p-8 mb-6 animate-slide-up">

@@ -304,6 +304,12 @@ export async function POST(request: NextRequest) {
       bias: analysisData.bias,
       keyFindings: analysisData.keyFindings,
       perspective: analysisData.perspective,
+      limitations: analysisData.limitations || {
+        unverifiableClaims: [],
+        dataLimitations: [],
+        uncertainties: [],
+        aiConfidenceNote: 'Analysis completed with available information',
+      },
       timestamp: new Date().toISOString(),
     }
 

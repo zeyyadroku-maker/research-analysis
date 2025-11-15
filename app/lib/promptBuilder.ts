@@ -58,47 +58,62 @@ Provide a comprehensive assessment with the following JSON structure:
       "score": <0-${context.framework.weights.methodologicalRigor}>,
       "maxScore": ${context.framework.weights.methodologicalRigor},
       "description": "<brief explanation of methodology assessment>",
-      "evidence": ["<specific evidence 1>", "<specific evidence 2>"]
+      "evidence": ["<specific evidence 1>", "<specific evidence 2>"],
+      "confidence": <0-100>,
+      "reasoning": "<explain WHY you gave this score: what evidence supports it, what limitations affect it>"
     },
     "dataTransparency": {
       "score": <0-${context.framework.weights.dataTransparency}>,
       "maxScore": ${context.framework.weights.dataTransparency},
       "description": "<explanation>",
-      "evidence": ["<evidence 1>", "<evidence 2>"]
+      "evidence": ["<evidence 1>", "<evidence 2>"],
+      "confidence": <0-100>,
+      "reasoning": "<explain WHY you gave this score>"
     },
     "sourceQuality": {
       "score": <0-${context.framework.weights.sourceQuality}>,
       "maxScore": ${context.framework.weights.sourceQuality},
       "description": "<explanation>",
-      "evidence": ["<evidence 1>"]
+      "evidence": ["<evidence 1>"],
+      "confidence": <0-100>,
+      "reasoning": "<explain WHY you gave this score>"
     },
     "authorCredibility": {
       "score": <0-${context.framework.weights.authorCredibility}>,
       "maxScore": ${context.framework.weights.authorCredibility},
       "description": "<explanation>",
-      "evidence": ["<evidence 1>"]
+      "evidence": ["<evidence 1>"],
+      "confidence": <0-100>,
+      "reasoning": "<explain WHY you gave this score>"
     },
     "statisticalValidity": {
       "score": <0-${context.framework.weights.statisticalValidity}>,
       "maxScore": ${context.framework.weights.statisticalValidity},
       "description": "<explanation>",
-      "evidence": ["<evidence 1>"]
+      "evidence": ["<evidence 1>"],
+      "confidence": <0-100>,
+      "reasoning": "<explain WHY you gave this score>"
     },
     "logicalConsistency": {
       "score": <0-${context.framework.weights.logicalConsistency}>,
       "maxScore": ${context.framework.weights.logicalConsistency},
       "description": "<explanation>",
-      "evidence": ["<evidence 1>"]
+      "evidence": ["<evidence 1>"],
+      "confidence": <0-100>,
+      "reasoning": "<explain WHY you gave this score>"
     },
     "totalScore": <sum of above scores, should not exceed ${(context.framework.weights.methodologicalRigor + context.framework.weights.dataTransparency + context.framework.weights.sourceQuality + context.framework.weights.authorCredibility + context.framework.weights.statisticalValidity + context.framework.weights.logicalConsistency).toFixed(1)},
-    "rating": "<Exemplary|Strong|Moderate|Weak|Very Poor|Invalid>"
+    "rating": "<Exemplary|Strong|Moderate|Weak|Very Poor|Invalid>",
+    "overallConfidence": <0-100>
   },
   "bias": {
     "biases": [
       {
         "type": "<Selection|Confirmation|Publication|Reporting|Funding|Citation|Demographic|Measurement>",
         "evidence": "<specific evidence from document>",
-        "severity": "<Low|Medium|High>"
+        "severity": "<Low|Medium|High>",
+        "confidence": <0-100>,
+        "verifiable": <true|false>
       }
     ],
     "overallLevel": "<Low|Medium|High>",
@@ -164,6 +179,18 @@ Provide a comprehensive assessment with the following JSON structure:
       "temporal": "<temporal/historical context>",
       "institutional": "<institutional context>"
     }
+  },
+  "limitations": {
+    "unverifiableClaims": [
+      {
+        "claim": "<claim that cannot be verified>",
+        "reason": "<why it cannot be verified from this document>",
+        "section": "<which component of analysis this affects: credibility, bias, keyFindings, or perspective>"
+      }
+    ],
+    "dataLimitations": ["<limitation due to using abstract only or partial text>"],
+    "uncertainties": ["<areas where your confidence is below 60%>"],
+    "aiConfidenceNote": "<general statement about confidence in this analysis and when full document review would strengthen it>"
   }
 }
 
@@ -365,47 +392,62 @@ Provide assessment with the following JSON structure. Use best judgment where in
       "score": <0-2.5>,
       "maxScore": 2.5,
       "description": "<assessment of methodological quality as evident from abstract>",
-      "evidence": ["<evidence 1 or 'Not fully assessable from abstract'>"]
+      "evidence": ["<evidence 1 or 'Not fully assessable from abstract'>"],
+      "confidence": <0-100>,
+      "reasoning": "<explain WHY - note abstract limitations>"
     },
     "dataTransparency": {
       "score": <0-1.5>,
       "maxScore": 1.5,
       "description": "<assessment of data transparency as evident from abstract>",
-      "evidence": ["<evidence 1 or 'Not fully assessable from abstract'>"]
+      "evidence": ["<evidence 1 or 'Not fully assessable from abstract'>"],
+      "confidence": <0-100>,
+      "reasoning": "<explain WHY>"
     },
     "sourceQuality": {
       "score": <0-2.0>,
       "maxScore": 2.0,
       "description": "<assessment of source quality as evident from abstract>",
-      "evidence": ["<evidence 1 or 'Not fully assessable from abstract'>"]
+      "evidence": ["<evidence 1 or 'Not fully assessable from abstract'>"],
+      "confidence": <0-100>,
+      "reasoning": "<explain WHY>"
     },
     "authorCredibility": {
       "score": <0-1.5>,
       "maxScore": 1.5,
       "description": "<assessment of author credibility as evident from abstract>",
-      "evidence": ["<evidence 1 or 'Not fully assessable from abstract'>"]
+      "evidence": ["<evidence 1 or 'Not fully assessable from abstract'>"],
+      "confidence": <0-100>,
+      "reasoning": "<explain WHY>"
     },
     "statisticalValidity": {
       "score": <0-1.0>,
       "maxScore": 1.0,
       "description": "<assessment of statistical approach as evident from abstract>",
-      "evidence": ["<evidence 1 or 'Not fully assessable from abstract'>"]
+      "evidence": ["<evidence 1 or 'Not fully assessable from abstract'>"],
+      "confidence": <0-100>,
+      "reasoning": "<explain WHY>"
     },
     "logicalConsistency": {
       "score": <0-1.5>,
       "maxScore": 1.5,
       "description": "<assessment of logical coherence as evident from abstract>",
-      "evidence": ["<evidence 1 or 'Not fully assessable from abstract'>"]
+      "evidence": ["<evidence 1 or 'Not fully assessable from abstract'>"],
+      "confidence": <0-100>,
+      "reasoning": "<explain WHY>"
     },
     "totalScore": <sum of above scores, should not exceed 10.0>,
-    "rating": "<Exemplary|Strong|Moderate|Weak|Very Poor|Invalid>"
+    "rating": "<Exemplary|Strong|Moderate|Weak|Very Poor|Invalid>",
+    "overallConfidence": <0-100>
   },
   "bias": {
     "biases": [
       {
         "type": "<Selection|Confirmation|Publication|Reporting|Funding|Citation|Demographic|Measurement>",
         "evidence": "<evidence from abstract or 'Not assessable from abstract'>",
-        "severity": "<Low|Medium|High>"
+        "severity": "<Low|Medium|High>",
+        "confidence": <0-100>,
+        "verifiable": <true|false>
       }
     ],
     "overallLevel": "<Low|Medium|High>",
@@ -471,6 +513,22 @@ Provide assessment with the following JSON structure. Use best judgment where in
       "temporal": "<temporal context if mentioned>",
       "institutional": "<institutional context if mentioned>"
     }
+  },
+  "limitations": {
+    "unverifiableClaims": [
+      {
+        "claim": "<claim that cannot be verified from abstract>",
+        "reason": "<why it cannot be verified - likely 'Not available in abstract'>",
+        "section": "<which component: credibility, bias, keyFindings, or perspective>"
+      }
+    ],
+    "dataLimitations": [
+      "Analysis based on abstract only - full document review would strengthen assessment",
+      "Methodology details cannot be fully evaluated from abstract",
+      "Statistical analysis cannot be verified from abstract alone"
+    ],
+    "uncertainties": ["<areas where confidence is below 70% due to abstract limitations>"],
+    "aiConfidenceNote": "This analysis is based on abstract only. Confidence in credibility assessment is limited. Review of full document would enable more robust evaluation of methodology, data transparency, statistical validity, and actual results."
   }
 }
 

@@ -24,6 +24,8 @@ export interface CredibilityComponent {
   maxScore: number
   description: string
   evidence: string[]
+  confidence: number // 0-100: how confident is the AI in this score
+  reasoning: string // Explanation of WHY this score was given
 }
 
 export interface CredibilityScore {
@@ -35,6 +37,7 @@ export interface CredibilityScore {
   logicalConsistency: CredibilityComponent
   totalScore: number
   rating: 'Exemplary' | 'Strong' | 'Moderate' | 'Weak' | 'Very Poor' | 'Invalid'
+  overallConfidence: number // 0-100: average confidence across all components
 }
 
 // Bias Detection
@@ -42,6 +45,8 @@ export interface BiasDetection {
   type: 'Selection' | 'Confirmation' | 'Publication' | 'Reporting' | 'Funding' | 'Citation' | 'Demographic' | 'Measurement'
   evidence: string
   severity: 'Low' | 'Medium' | 'High'
+  confidence: number // 0-100: how confident is the AI in this bias detection
+  verifiable: boolean // Can this claim be verified from the document
 }
 
 export interface BiasAnalysis {
@@ -125,6 +130,18 @@ export interface ResearchPerspective {
   }
 }
 
+// Analysis Limitations and Unverifiable Claims
+export interface AnalysisLimitations {
+  unverifiableClaims: Array<{
+    claim: string
+    reason: string // Why it cannot be verified
+    section: string // Which section of analysis this applies to
+  }>
+  dataLimitations: string[] // Limitations due to abstract/partial text only
+  uncertainties: string[] // Areas where AI has low confidence
+  aiConfidenceNote: string // General note about AI limitations in this analysis
+}
+
 // Complete Analysis Result
 export interface AnalysisResult {
   paper: Paper
@@ -132,6 +149,7 @@ export interface AnalysisResult {
   bias: BiasAnalysis
   keyFindings: KeyFindings
   perspective: ResearchPerspective
+  limitations: AnalysisLimitations // AI transparency: unverifiable claims and uncertainties
   timestamp: string
 }
 
