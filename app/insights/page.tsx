@@ -79,11 +79,11 @@ export default function InsightsPage() {
       <Navigation />
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-6 sm:py-12">
         {/* Header */}
-        <div className="mb-12">
-          <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Analysis Insights Dashboard</h2>
-          <p className="text-gray-600 dark:text-gray-400">Statistics and insights from your bookmarked research papers</p>
+        <div className="mb-8 sm:mb-12">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">Analysis Insights Dashboard</h2>
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">Statistics and insights from your bookmarked research papers</p>
         </div>
 
         {loading ? (
@@ -115,92 +115,92 @@ export default function InsightsPage() {
         ) : (
           <>
             {/* Key Statistics */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-              <div className="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg p-6">
-                <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">Total Papers</p>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.totalPapers}</p>
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-6 sm:mb-8">
+              <div className="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg p-3 sm:p-6">
+                <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm mb-1 sm:mb-2">Total Papers</p>
+                <p className="text-xl sm:text-3xl font-bold text-gray-900 dark:text-white">{stats.totalPapers}</p>
               </div>
-              <div className="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg p-6">
-                <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">Avg Credibility</p>
-                <p className="text-3xl font-bold text-blue-600 dark:text-accent-blue">{stats.avgCredibility}/10</p>
+              <div className="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg p-3 sm:p-6">
+                <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm mb-1 sm:mb-2">Avg Credibility</p>
+                <p className="text-xl sm:text-3xl font-bold text-blue-600 dark:text-accent-blue">{stats.avgCredibility}/10</p>
               </div>
-              <div className="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg p-6">
-                <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">High Bias Papers</p>
-                <p className="text-3xl font-bold text-orange-500 dark:text-orange-400">{Math.round(stats.avgBiasLevel)}%</p>
+              <div className="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg p-3 sm:p-6">
+                <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm mb-1 sm:mb-2">High Bias Papers</p>
+                <p className="text-xl sm:text-3xl font-bold text-orange-500 dark:text-orange-400">{Math.round(stats.avgBiasLevel)}%</p>
               </div>
-              <div className="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg p-6">
-                <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">Unique Fields</p>
-                <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">{Object.keys(stats.byField).length}</p>
+              <div className="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg p-3 sm:p-6">
+                <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm mb-1 sm:mb-2">Unique Fields</p>
+                <p className="text-xl sm:text-3xl font-bold text-purple-600 dark:text-purple-400">{Object.keys(stats.byField).length}</p>
               </div>
             </div>
 
             {/* Credibility Distribution */}
-            <div className="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg p-6 mb-8">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Credibility Distribution</h3>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <div className="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg p-3 sm:p-6 mb-6 sm:mb-8">
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">Credibility Distribution</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-4">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.credibilityDistribution.exemplary}</div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Exemplary</p>
+                  <div className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-400">{stats.credibilityDistribution.exemplary}</div>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Exemplary</p>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.credibilityDistribution.strong}</div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Strong</p>
+                  <div className="text-lg sm:text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.credibilityDistribution.strong}</div>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Strong</p>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{stats.credibilityDistribution.moderate}</div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Moderate</p>
+                  <div className="text-lg sm:text-2xl font-bold text-yellow-600 dark:text-yellow-400">{stats.credibilityDistribution.moderate}</div>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Moderate</p>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{stats.credibilityDistribution.weak}</div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Weak</p>
+                  <div className="text-lg sm:text-2xl font-bold text-orange-600 dark:text-orange-400">{stats.credibilityDistribution.weak}</div>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Weak</p>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-red-600 dark:text-red-400">{stats.credibilityDistribution.veryPoor}</div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Very Poor</p>
+                  <div className="text-lg sm:text-2xl font-bold text-red-600 dark:text-red-400">{stats.credibilityDistribution.veryPoor}</div>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Very Poor</p>
                 </div>
               </div>
             </div>
 
             {/* Field Distribution */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-              <div className="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg p-6">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Papers by Field</h3>
-                <div className="space-y-3">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8 mb-6 sm:mb-8">
+              <div className="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg p-3 sm:p-6">
+                <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">Papers by Field</h3>
+                <div className="space-y-2 sm:space-y-3">
                   {Object.entries(stats.byField)
                     .sort(([, a], [, b]) => b - a)
                     .map(([field, count]) => (
                       <div key={field} className="flex justify-between items-center">
-                        <span className="text-gray-700 dark:text-gray-300 text-sm">{field.replace(/-/g, ' ')}</span>
-                        <div className="flex items-center gap-3">
-                          <div className="w-32 h-2 bg-gray-300 dark:bg-dark-700 rounded overflow-hidden">
+                        <span className="text-gray-700 dark:text-gray-300 text-xs sm:text-sm truncate">{field.replace(/-/g, ' ')}</span>
+                        <div className="flex items-center gap-2 sm:gap-3 ml-2">
+                          <div className="w-16 sm:w-32 h-2 bg-gray-300 dark:bg-dark-700 rounded overflow-hidden">
                             <div
                               className="h-full bg-blue-600 dark:bg-accent-blue"
                               style={{ width: `${(count / stats.totalPapers) * 100}%` }}
                             ></div>
                           </div>
-                          <span className="text-gray-600 dark:text-gray-400 text-sm w-8 text-right">{count}</span>
+                          <span className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm w-6 text-right">{count}</span>
                         </div>
                       </div>
                     ))}
                 </div>
               </div>
 
-              <div className="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg p-6">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Papers by Type</h3>
-                <div className="space-y-3">
+              <div className="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg p-3 sm:p-6">
+                <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">Papers by Type</h3>
+                <div className="space-y-2 sm:space-y-3">
                   {Object.entries(stats.byDocType)
                     .sort(([, a], [, b]) => b - a)
                     .map(([docType, count]) => (
                       <div key={docType} className="flex justify-between items-center">
-                        <span className="text-gray-700 dark:text-gray-300 text-sm capitalize">{docType.replace(/-/g, ' ')}</span>
-                        <div className="flex items-center gap-3">
-                          <div className="w-32 h-2 bg-gray-300 dark:bg-dark-700 rounded overflow-hidden">
+                        <span className="text-gray-700 dark:text-gray-300 text-xs sm:text-sm capitalize truncate">{docType.replace(/-/g, ' ')}</span>
+                        <div className="flex items-center gap-2 sm:gap-3 ml-2">
+                          <div className="w-16 sm:w-32 h-2 bg-gray-300 dark:bg-dark-700 rounded overflow-hidden">
                             <div
                               className="h-full bg-purple-600 dark:bg-purple-400"
                               style={{ width: `${(count / stats.totalPapers) * 100}%` }}
                             ></div>
                           </div>
-                          <span className="text-gray-600 dark:text-gray-400 text-sm w-8 text-right">{count}</span>
+                          <span className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm w-6 text-right">{count}</span>
                         </div>
                       </div>
                     ))}
@@ -209,24 +209,24 @@ export default function InsightsPage() {
             </div>
 
             {/* Recent Papers */}
-            <div className="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg p-6">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Recent Bookmarks</h3>
-              <div className="space-y-3 max-h-96 overflow-y-auto">
+            <div className="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg p-3 sm:p-6">
+              <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">Recent Bookmarks</h3>
+              <div className="space-y-2 sm:space-y-3 max-h-96 overflow-y-auto">
                 {bookmarks
                   .sort((a, b) => new Date(b.bookmarkedAt).getTime() - new Date(a.bookmarkedAt).getTime())
                   .slice(0, 10)
                   .map((paper) => (
-                    <div key={paper.id} className="flex justify-between items-start p-3 bg-gray-100 dark:bg-dark-700 rounded border border-gray-300 dark:border-dark-600">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{paper.analysis.paper.title}</p>
-                        <p className="text-xs text-gray-600 dark:text-gray-400">
+                    <div key={paper.id} className="flex flex-col sm:flex-row sm:justify-between sm:items-start p-2 sm:p-3 bg-gray-100 dark:bg-dark-700 rounded border border-gray-300 dark:border-dark-600">
+                      <div className="flex-1 min-w-0 mb-2 sm:mb-0">
+                        <p className="text-xs sm:text-sm font-medium text-gray-900 dark:text-white line-clamp-2">{paper.analysis.paper.title}</p>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-1">
                           {paper.analysis.paper.authors.slice(0, 2).join(', ')}
                           {paper.analysis.paper.authors.length > 2 && ' +more'}
                         </p>
                       </div>
-                      <div className="flex items-center gap-3 ml-4 flex-shrink-0">
+                      <div className="flex items-center gap-2 sm:gap-3 sm:ml-4 flex-shrink-0">
                         <div className="text-right">
-                          <p className="text-sm font-semibold text-blue-600 dark:text-accent-blue">
+                          <p className="text-xs sm:text-sm font-semibold text-blue-600 dark:text-accent-blue">
                             {getNormalizedScore(paper.analysis.credibility.totalScore, paper.analysis.credibility.maxTotalScore).toFixed(1)}/10
                           </p>
                           <p className="text-xs text-gray-600 dark:text-gray-400">{paper.analysis.credibility.rating}</p>
