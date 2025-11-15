@@ -280,7 +280,7 @@ Disciplinary Perspective: ${analysis.perspective.disciplinaryPerspective}
                       <span className="text-sm font-bold text-accent-blue">
                         {component.score}/{component.maxScore}
                       </span>
-                      {component.confidence && (
+                      {component.confidence !== undefined && component.confidence !== null && (
                         <span className={`text-xs font-bold px-2 py-1 rounded ${getConfidenceBadgeColor(component.confidence)}`}>
                           {component.confidence}%
                         </span>
@@ -294,7 +294,7 @@ Disciplinary Perspective: ${analysis.perspective.disciplinaryPerspective}
                     ></div>
                   </div>
                   <p className="text-xs text-gray-400 mt-2">{component.description}</p>
-                  {component.reasoning && (
+                  {component.reasoning && component.reasoning.length > 0 && (
                     <div className="bg-dark-800 rounded p-2 mt-2 border-l-2 border-accent-blue">
                       <p className="text-xs text-gray-300 italic">{component.reasoning}</p>
                     </div>
@@ -342,12 +342,12 @@ Disciplinary Perspective: ${analysis.perspective.disciplinaryPerspective}
                     <span className="font-semibold">{bias.type} Bias</span>
                     <div className="flex gap-2 items-center">
                       <span className="text-xs font-bold uppercase">{bias.severity}</span>
-                      {bias.confidence !== undefined && (
+                      {bias.confidence !== undefined && bias.confidence !== null && (
                         <span className={`text-xs font-bold px-2 py-1 rounded ${getConfidenceBadgeColor(bias.confidence)}`}>
                           {bias.confidence}%
                         </span>
                       )}
-                      {bias.verifiable !== undefined && (
+                      {bias.verifiable !== undefined && bias.verifiable !== null && (
                         <span className={`text-xs font-bold px-2 py-1 rounded ${bias.verifiable ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
                           {bias.verifiable ? 'Verifiable' : 'Unverifiable'}
                         </span>
@@ -528,7 +528,7 @@ Disciplinary Perspective: ${analysis.perspective.disciplinaryPerspective}
               </div>
             </div>
 
-            {analysis.perspective.assumptions.stated.length > 0 && (
+            {analysis.perspective.assumptions && analysis.perspective.assumptions.stated && analysis.perspective.assumptions.stated.length > 0 && (
               <div className="mt-6">
                 <h3 className="text-accent-blue font-semibold mb-2">Key Assumptions</h3>
                 <ul className="space-y-2">
