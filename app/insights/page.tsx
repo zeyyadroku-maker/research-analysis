@@ -6,7 +6,7 @@ import { BookmarkedPaper } from '@/app/types'
 import Navigation from '@/app/components/Navigation'
 import { getNormalizedScore } from '@/app/lib/scoreUtils'
 
-export default function DashboardPage() {
+export default function InsightsPage() {
   const [bookmarks, setBookmarks] = useState<BookmarkedPaper[]>([])
   const [loading, setLoading] = useState(true)
 
