@@ -45,8 +45,12 @@ export default function DashboardPage() {
   const stats = {
     totalPapers: bookmarks.length,
     avgCredibility: bookmarks.length > 0
-      ? (bookmarks.reduce((sum, b) => sum + getNormalizedScore(b.analysis.credibility.totalScore, b.analysis.credibility.maxTotalScore), 0) / bookmarks.length).toFixed(2)
-      : '0.00',
+      ? (bookmarks.reduce((sum, b) => {
+          const normalizedScore = getNormalizedScore(b.analysis.credibility.totalScore, b.analysis.credibility.maxTotalScore)
+          // Round to 1 decimal place to match individual paper display format
+          return sum + Math.round(normalizedScore * 10) / 10
+        }, 0) / bookmarks.length).toFixed(1)
+      : '0.0',
     avgBiasLevel: bookmarks.length > 0
       ? bookmarks.filter(b => b.analysis.bias.overallLevel === 'High').length / bookmarks.length * 100
       : 0,
