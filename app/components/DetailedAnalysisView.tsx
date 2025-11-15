@@ -5,7 +5,6 @@ import { useState, useEffect } from 'react'
 import { saveBookmark, removeBookmark, isBookmarked } from '@/app/lib/bookmarks'
 import DocumentTypeIndicator from './DocumentTypeIndicator'
 import FrameworkAssessmentView from './FrameworkAssessmentView'
-import DocumentExtractionIndicator from './DocumentExtractionIndicator'
 import AIDisclaimerBanner from './AIDisclaimerBanner'
 import { getFrameworkGuidelines } from '@/app/lib/adaptiveFramework'
 
@@ -17,6 +16,17 @@ interface DetailedAnalysisViewProps {
 export default function DetailedAnalysisView({ analysis, onClose }: DetailedAnalysisViewProps) {
   const [isBookmarkedState, setIsBookmarkedState] = useState(false)
   const [notes] = useState('')
+
+  // Handle Esc key to close modal
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose()
+      }
+    }
+    window.addEventListener('keydown', handleEsc)
+    return () => window.removeEventListener('keydown', handleEsc)
+  }, [onClose])
 
   useEffect(() => {
     setIsBookmarkedState(isBookmarked(analysis.paper.id))
@@ -170,15 +180,26 @@ Disciplinary Perspective: ${analysis.perspective.disciplinaryPerspective}
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 overflow-y-auto">
+      {/* Floating Close Button */}
+      <button
+        onClick={onClose}
+        className="fixed top-8 right-8 z-50 bg-dark-800 border border-dark-700 text-gray-400 hover:text-white hover:bg-dark-700 transition-colors p-2 rounded-lg"
+        title="Close (Esc)"
+      >
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
       <div className="min-h-screen py-8 px-4">
         <div className="max-w-4xl mx-auto">
           {/* AI Disclaimer Banner */}
           <AIDisclaimerBanner compact={true} />
 
           {/* Header */}
-          <div className="bg-dark-800 border border-dark-700 rounded-lg p-8 mb-6 animate-slide-up">
+          <div className="bg-dark-800 border border-dark-700 rounded-lg p-8 mb-6">
             <div className="flex justify-between items-start mb-6">
-              <div className="flex-1 mr-4">
+              <div className="flex-1">
                 <h1 className="text-3xl font-bold text-white mb-2">{analysis.paper.title}</h1>
                 <p className="text-gray-400">
                   {analysis.paper.authors.slice(0, 3).join(', ')}
@@ -188,17 +209,9 @@ Disciplinary Perspective: ${analysis.perspective.disciplinaryPerspective}
                   {analysis.paper.journal} • {analysis.paper.year}
                 </p>
               </div>
-              <button
-                onClick={onClose}
-                className="text-gray-400 hover:text-white transition-colors p-2"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-3 items-center flex-wrap">
               {/* Bookmark button */}
               <button
                 onClick={handleBookmark}
@@ -224,6 +237,11 @@ Disciplinary Perspective: ${analysis.perspective.disciplinaryPerspective}
                 </svg>
                 Export
               </button>
+
+              {/* Text Extraction Badge */}
+              <span className="ml-auto px-3 py-2 rounded-full text-xs font-medium bg-green-900 text-green-200 border border-green-700">
+                ✓ Full Text
+              </span>
             </div>
           </div>
 
@@ -235,13 +253,6 @@ Disciplinary Perspective: ${analysis.perspective.disciplinaryPerspective}
             />
           )}
 
-          {/* Document Extraction Status */}
-          <DocumentExtractionIndicator
-            extracted={true}
-            source="provided"
-            format="text"
-          />
-
           {/* Framework Assessment Overview */}
           {analysis.paper.documentType && analysis.paper.field && (
             <FrameworkAssessmentView
@@ -250,8 +261,115 @@ Disciplinary Perspective: ${analysis.perspective.disciplinaryPerspective}
             />
           )}
 
+          {/* AI Analysis Limitations */}
+          {analysis.limitations && (
+            <div className="bg-amber-900/20 border border-amber-700 rounded-lg p-6 mb-6">
+              <div className="flex items-center gap-3 mb-4">
+                <svg className="w-6 h-6 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                <h2 className="text-2xl font-bold text-amber-200">AI Analysis Limitations</h2>
+              </div>
+
+              {analysis.limitations.aiConfidenceNote && (
+                <div className="bg-dark-800 rounded p-4 mb-4 border border-amber-700">
+                  <p className="text-sm text-amber-100">{analysis.limitations.aiConfidenceNote}</p>
+                </div>
+              )}
+
+              {analysis.limitations.dataLimitations && analysis.limitations.dataLimitations.length > 0 && (
+                <div className="mb-4">
+                  <h3 className="font-semibold text-amber-200 mb-2">Data Limitations</h3>
+                  <ul className="space-y-1">
+                    {analysis.limitations.dataLimitations.map((limitation, i) => (
+                      <li key={i} className="flex gap-2 text-sm text-amber-100">
+                        <span className="text-amber-400 flex-shrink-0">•</span>
+                        <span>{limitation}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {analysis.limitations.uncertainties && analysis.limitations.uncertainties.length > 0 && (
+                <div className="mb-4">
+                  <h3 className="font-semibold text-amber-200 mb-2">Low Confidence Areas</h3>
+                  <ul className="space-y-1">
+                    {analysis.limitations.uncertainties.map((uncertainty, i) => (
+                      <li key={i} className="flex gap-2 text-sm text-amber-100">
+                        <span className="text-amber-400 flex-shrink-0">!</span>
+                        <span>{uncertainty}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {analysis.limitations.unverifiableClaims && analysis.limitations.unverifiableClaims.length > 0 && (
+                <div>
+                  <h3 className="font-semibold text-amber-200 mb-2">&quot;I Don&apos;t Know&quot; Claims</h3>
+                  <div className="space-y-2">
+                    {analysis.limitations.unverifiableClaims.map((claim, i) => (
+                      <div key={i} className="bg-dark-700 rounded p-3 border-l-2 border-red-500">
+                        <p className="text-sm font-medium text-amber-100 mb-1">{claim.claim}</p>
+                        <p className="text-xs text-gray-400">Reason: {claim.reason}</p>
+                        <p className="text-xs text-gray-500">Affects: {claim.section}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Bias Analysis */}
+          <div className="bg-dark-800 border border-dark-700 rounded-lg p-8 mb-6">
+            <div className="flex items-center gap-3 mb-6">
+              <svg className="w-6 h-6 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              <h2 className="text-2xl font-bold text-white">Bias Analysis</h2>
+            </div>
+
+            <div className={`inline-block px-3 py-1 rounded-full text-sm font-medium mb-6 ${
+              analysis.bias.overallLevel === 'Low'
+                ? 'bg-green-900 text-green-200'
+                : analysis.bias.overallLevel === 'Medium'
+                ? 'bg-yellow-900 text-yellow-200'
+                : 'bg-red-900 text-red-200'
+            }`}>
+              Overall Bias Level: {analysis.bias.overallLevel}
+            </div>
+
+            <p className="text-gray-300 mb-6">{analysis.bias.justification}</p>
+
+            <div className="space-y-3">
+              {analysis.bias.biases.map((bias, index) => (
+                <div key={index} className={`border rounded p-4 ${getSeverityColor(bias.severity)}`}>
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="font-semibold">{bias.type} Bias</span>
+                    <div className="flex gap-2 items-center">
+                      <span className="text-xs font-bold uppercase">{bias.severity}</span>
+                      {bias.confidence !== undefined && bias.confidence !== null && (
+                        <span className={`text-xs font-bold px-2 py-1 rounded ${getConfidenceBadgeColor(bias.confidence)}`}>
+                          {bias.confidence}%
+                        </span>
+                      )}
+                      {bias.verifiable !== undefined && bias.verifiable !== null && (
+                        <span className={`text-xs font-bold px-2 py-1 rounded ${bias.verifiable ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
+                          {bias.verifiable ? 'Verifiable' : 'Unverifiable'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-sm">{bias.evidence}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Credibility Assessment */}
-          <div className="bg-dark-800 border border-dark-700 rounded-lg p-8 mb-6 animate-slide-up">
+          <div className="bg-dark-800 border border-dark-700 rounded-lg p-8 mb-6">
             <div className="flex items-center gap-3 mb-6">
               <svg className="w-6 h-6 text-accent-blue" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
@@ -314,115 +432,8 @@ Disciplinary Perspective: ${analysis.perspective.disciplinaryPerspective}
             </div>
           </div>
 
-          {/* Bias Analysis */}
-          <div className="bg-dark-800 border border-dark-700 rounded-lg p-8 mb-6 animate-slide-up">
-            <div className="flex items-center gap-3 mb-6">
-              <svg className="w-6 h-6 text-orange-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-              </svg>
-              <h2 className="text-2xl font-bold text-white">Bias Analysis</h2>
-            </div>
-
-            <div className={`inline-block px-3 py-1 rounded-full text-sm font-medium mb-6 ${
-              analysis.bias.overallLevel === 'Low'
-                ? 'bg-green-900 text-green-200'
-                : analysis.bias.overallLevel === 'Medium'
-                ? 'bg-yellow-900 text-yellow-200'
-                : 'bg-red-900 text-red-200'
-            }`}>
-              Overall Bias Level: {analysis.bias.overallLevel}
-            </div>
-
-            <p className="text-gray-300 mb-6">{analysis.bias.justification}</p>
-
-            <div className="space-y-3">
-              {analysis.bias.biases.map((bias, index) => (
-                <div key={index} className={`border rounded p-4 ${getSeverityColor(bias.severity)}`}>
-                  <div className="flex justify-between items-start mb-2">
-                    <span className="font-semibold">{bias.type} Bias</span>
-                    <div className="flex gap-2 items-center">
-                      <span className="text-xs font-bold uppercase">{bias.severity}</span>
-                      {bias.confidence !== undefined && bias.confidence !== null && (
-                        <span className={`text-xs font-bold px-2 py-1 rounded ${getConfidenceBadgeColor(bias.confidence)}`}>
-                          {bias.confidence}%
-                        </span>
-                      )}
-                      {bias.verifiable !== undefined && bias.verifiable !== null && (
-                        <span className={`text-xs font-bold px-2 py-1 rounded ${bias.verifiable ? 'bg-green-600 text-white' : 'bg-red-600 text-white'}`}>
-                          {bias.verifiable ? 'Verifiable' : 'Unverifiable'}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <p className="text-sm">{bias.evidence}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* AI Analysis Limitations */}
-          {analysis.limitations && (
-            <div className="bg-amber-900/20 border border-amber-700 rounded-lg p-6 mb-6 animate-slide-up">
-              <div className="flex items-center gap-3 mb-4">
-                <svg className="w-6 h-6 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
-                <h2 className="text-2xl font-bold text-amber-200">AI Analysis Limitations</h2>
-              </div>
-
-              {analysis.limitations.aiConfidenceNote && (
-                <div className="bg-dark-800 rounded p-4 mb-4 border border-amber-700">
-                  <p className="text-sm text-amber-100">{analysis.limitations.aiConfidenceNote}</p>
-                </div>
-              )}
-
-              {analysis.limitations.dataLimitations && analysis.limitations.dataLimitations.length > 0 && (
-                <div className="mb-4">
-                  <h3 className="font-semibold text-amber-200 mb-2">Data Limitations</h3>
-                  <ul className="space-y-1">
-                    {analysis.limitations.dataLimitations.map((limitation, i) => (
-                      <li key={i} className="flex gap-2 text-sm text-amber-100">
-                        <span className="text-amber-400 flex-shrink-0">•</span>
-                        <span>{limitation}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {analysis.limitations.uncertainties && analysis.limitations.uncertainties.length > 0 && (
-                <div className="mb-4">
-                  <h3 className="font-semibold text-amber-200 mb-2">Low Confidence Areas</h3>
-                  <ul className="space-y-1">
-                    {analysis.limitations.uncertainties.map((uncertainty, i) => (
-                      <li key={i} className="flex gap-2 text-sm text-amber-100">
-                        <span className="text-amber-400 flex-shrink-0">!</span>
-                        <span>{uncertainty}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {analysis.limitations.unverifiableClaims && analysis.limitations.unverifiableClaims.length > 0 && (
-                <div>
-                  <h3 className="font-semibold text-amber-200 mb-2">&quot;I Don&apos;t Know&quot; Claims</h3>
-                  <div className="space-y-2">
-                    {analysis.limitations.unverifiableClaims.map((claim, i) => (
-                      <div key={i} className="bg-dark-700 rounded p-3 border-l-2 border-red-500">
-                        <p className="text-sm font-medium text-amber-100 mb-1">{claim.claim}</p>
-                        <p className="text-xs text-gray-400">Reason: {claim.reason}</p>
-                        <p className="text-xs text-gray-500">Affects: {claim.section}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
           {/* Key Findings */}
-          <div className="bg-dark-800 border border-dark-700 rounded-lg p-8 mb-6 animate-slide-up">
+          <div className="bg-dark-800 border border-dark-700 rounded-lg p-8 mb-6">
             <div className="flex items-center gap-3 mb-6">
               <svg className="w-6 h-6 text-cyan-400" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
@@ -500,7 +511,7 @@ Disciplinary Perspective: ${analysis.perspective.disciplinaryPerspective}
           </div>
 
           {/* Research Perspective */}
-          <div className="bg-dark-800 border border-dark-700 rounded-lg p-8 animate-slide-up">
+          <div className="bg-dark-800 border border-dark-700 rounded-lg p-8 mb-6">
             <div className="flex items-center gap-3 mb-6">
               <svg className="w-6 h-6 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M13 7H7v6h6V7z" />
