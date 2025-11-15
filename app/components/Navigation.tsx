@@ -63,7 +63,7 @@ export default function Navigation({ onLogoClick }: NavigationProps) {
             )}
           </button>
           <Link
-            href="/insights"
+            href="/dashboard"
             className="px-4 py-2 bg-gray-200 dark:bg-dark-700 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg transition-all duration-200 flex items-center gap-2"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
