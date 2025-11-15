@@ -10,8 +10,14 @@
  * @returns Normalized score on 0-10 scale (e.g., 8.9)
  */
 export function getNormalizedScore(totalScore: number, maxTotalScore: number): number {
-  if (maxTotalScore <= 0) return 0
-  const percentage = (totalScore / maxTotalScore) * 100
+  // Validate inputs and convert to numbers
+  const score = Number(totalScore) || 0
+  const maxScore = Number(maxTotalScore) || 0
+
+  // Return 0 if invalid inputs
+  if (maxScore <= 0 || isNaN(score) || isNaN(maxScore)) return 0
+
+  const percentage = (score / maxScore) * 100
   return (percentage / 100) * 10
 }
 
