@@ -6,7 +6,7 @@ import { BookmarkedPaper } from '@/app/types'
 import Navigation from '@/app/components/Navigation'
 import { getNormalizedScore } from '@/app/lib/scoreUtils'
 
-export default function DashboardPage() {
+export default function InsightsPage() {
   const [bookmarks, setBookmarks] = useState<BookmarkedPaper[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -78,7 +78,7 @@ export default function DashboardPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <div className="mb-12">
-          <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Analysis Insights Dashboard</h2>
+          <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Analysis Insights</h2>
           <p className="text-gray-600 dark:text-gray-400">Statistics and insights from your bookmarked research papers</p>
         </div>
 
@@ -99,105 +99,100 @@ export default function DashboardPage() {
               <rect x="7" y="13" width="9" height="4" rx="1"/>
               <rect x="7" y="5" width="12" height="4" rx="1"/>
             </svg>
-            <h3 className="text-xl font-medium text-gray-600 dark:text-gray-400 mb-2">No Insights Available Yet</h3>
-            <p className="text-gray-600 dark:text-gray-500 mb-6">Bookmark papers to see insights and statistics here</p>
-            <Link
-              href="/"
-              className="inline-block px-6 py-2 bg-accent-blue text-white rounded-lg hover:bg-blue-600 transition"
-            >
-              Browse Papers
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No bookmarks yet</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">Start analyzing papers to see insights here</p>
+            <Link href="/" className="inline-block px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+              Explore Papers
             </Link>
           </div>
         ) : (
           <>
             {/* Key Statistics */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+              {/* Total Papers */}
               <div className="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg p-6">
-                <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">Total Papers</p>
-                <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.totalPapers}</p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Total Papers</p>
+                    <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.totalPapers}</p>
+                  </div>
+                  <div className="text-4xl text-blue-200 dark:text-dark-600">📚</div>
+                </div>
               </div>
+
+              {/* Average Credibility */}
               <div className="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg p-6">
-                <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">Avg Credibility</p>
-                <p className="text-3xl font-bold text-blue-600 dark:text-accent-blue">{stats.avgCredibility}/10</p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Avg Credibility</p>
+                    <p className="text-3xl font-bold text-blue-600 dark:text-accent-blue">{stats.avgCredibility}/10</p>
+                  </div>
+                  <div className="text-4xl text-blue-200 dark:text-dark-600">⭐</div>
+                </div>
               </div>
+
+              {/* High Bias Papers */}
               <div className="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg p-6">
-                <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">High Bias Papers</p>
-                <p className="text-3xl font-bold text-orange-500 dark:text-orange-400">{Math.round(stats.avgBiasLevel)}%</p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">High Bias Papers</p>
+                    <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">{Math.round(stats.avgBiasLevel)}%</p>
+                  </div>
+                  <div className="text-4xl text-orange-200 dark:text-dark-600">⚠️</div>
+                </div>
               </div>
+
+              {/* Unique Fields */}
               <div className="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg p-6">
-                <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">Unique Fields</p>
-                <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">{Object.keys(stats.byField).length}</p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Unique Fields</p>
+                    <p className="text-3xl font-bold text-green-600 dark:text-green-400">{Object.keys(stats.byField).length}</p>
+                  </div>
+                  <div className="text-4xl text-green-200 dark:text-dark-600">🔬</div>
+                </div>
               </div>
             </div>
 
-            {/* Credibility Distribution */}
-            <div className="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg p-6 mb-8">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Credibility Distribution</h3>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.credibilityDistribution.exemplary}</div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Exemplary</p>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.credibilityDistribution.strong}</div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Strong</p>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{stats.credibilityDistribution.moderate}</div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Moderate</p>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{stats.credibilityDistribution.weak}</div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Weak</p>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-red-600 dark:text-red-400">{stats.credibilityDistribution.veryPoor}</div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Very Poor</p>
+            {/* Credibility Distribution and Fields */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
+              {/* Credibility Distribution */}
+              <div className="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg p-6">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Credibility Distribution</h3>
+                <div className="grid grid-cols-5 gap-3">
+                  <div className="text-center p-3 bg-green-50 dark:bg-green-900/20 rounded border border-green-200 dark:border-green-700">
+                    <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.credibilityDistribution.exemplary}</p>
+                    <p className="text-xs text-green-700 dark:text-green-300 mt-1">Exemplary</p>
+                  </div>
+                  <div className="text-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-700">
+                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.credibilityDistribution.strong}</p>
+                    <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">Strong</p>
+                  </div>
+                  <div className="text-center p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded border border-yellow-200 dark:border-yellow-700">
+                    <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{stats.credibilityDistribution.moderate}</p>
+                    <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-1">Moderate</p>
+                  </div>
+                  <div className="text-center p-3 bg-orange-50 dark:bg-orange-900/20 rounded border border-orange-200 dark:border-orange-700">
+                    <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{stats.credibilityDistribution.weak}</p>
+                    <p className="text-xs text-orange-700 dark:text-orange-300 mt-1">Weak</p>
+                  </div>
+                  <div className="text-center p-3 bg-red-50 dark:bg-red-900/20 rounded border border-red-200 dark:border-red-700">
+                    <p className="text-2xl font-bold text-red-600 dark:text-red-400">{stats.credibilityDistribution.veryPoor}</p>
+                    <p className="text-xs text-red-700 dark:text-red-300 mt-1">Very Poor</p>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Field Distribution */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+              {/* Field Distribution */}
               <div className="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg p-6">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Papers by Field</h3>
-                <div className="space-y-3">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">By Academic Field</h3>
+                <div className="space-y-2 max-h-80 overflow-y-auto">
                   {Object.entries(stats.byField)
                     .sort(([, a], [, b]) => b - a)
                     .map(([field, count]) => (
-                      <div key={field} className="flex justify-between items-center">
-                        <span className="text-gray-700 dark:text-gray-300 text-sm">{field.replace(/-/g, ' ')}</span>
-                        <div className="flex items-center gap-3">
-                          <div className="w-32 h-2 bg-gray-300 dark:bg-dark-700 rounded overflow-hidden">
-                            <div
-                              className="h-full bg-blue-600 dark:bg-accent-blue"
-                              style={{ width: `${(count / stats.totalPapers) * 100}%` }}
-                            ></div>
-                          </div>
-                          <span className="text-gray-600 dark:text-gray-400 text-sm w-8 text-right">{count}</span>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-              </div>
-
-              <div className="bg-white dark:bg-dark-800 border border-gray-200 dark:border-dark-700 rounded-lg p-6">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Papers by Type</h3>
-                <div className="space-y-3">
-                  {Object.entries(stats.byDocType)
-                    .sort(([, a], [, b]) => b - a)
-                    .map(([docType, count]) => (
-                      <div key={docType} className="flex justify-between items-center">
-                        <span className="text-gray-700 dark:text-gray-300 text-sm capitalize">{docType.replace(/-/g, ' ')}</span>
-                        <div className="flex items-center gap-3">
-                          <div className="w-32 h-2 bg-gray-300 dark:bg-dark-700 rounded overflow-hidden">
-                            <div
-                              className="h-full bg-purple-600 dark:bg-purple-400"
-                              style={{ width: `${(count / stats.totalPapers) * 100}%` }}
-                            ></div>
-                          </div>
-                          <span className="text-gray-600 dark:text-gray-400 text-sm w-8 text-right">{count}</span>
-                        </div>
+                      <div key={field} className="flex items-center justify-between p-2 bg-gray-100 dark:bg-dark-700 rounded">
+                        <span className="text-sm text-gray-700 dark:text-gray-300 truncate">{field}</span>
+                        <span className="ml-2 text-sm font-semibold text-blue-600 dark:text-accent-blue">{count}</span>
                       </div>
                     ))}
                 </div>
