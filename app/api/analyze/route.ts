@@ -182,26 +182,31 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Cap score to max weight if needed
     if (credibilityScore.totalScore > maxWeight) {
       console.warn(
         `[Score Validation] Credibility score ${credibilityScore.totalScore.toFixed(2)} exceeds maximum weight ${maxWeight.toFixed(2)}. Capping to maximum.`
       )
       credibilityScore.totalScore = Math.min(credibilityScore.totalScore, maxWeight)
+    }
 
-      // Recalculate rating based on capped score
-      if (credibilityScore.totalScore >= maxWeight * 0.9) {
-        credibilityScore.rating = 'Exemplary'
-      } else if (credibilityScore.totalScore >= maxWeight * 0.75) {
-        credibilityScore.rating = 'Strong'
-      } else if (credibilityScore.totalScore >= maxWeight * 0.5) {
-        credibilityScore.rating = 'Moderate'
-      } else if (credibilityScore.totalScore >= maxWeight * 0.25) {
-        credibilityScore.rating = 'Weak'
-      } else if (credibilityScore.totalScore > 0) {
-        credibilityScore.rating = 'Very Poor'
-      } else {
-        credibilityScore.rating = 'Invalid'
-      }
+    // Add maxTotalScore to credibility object
+    credibilityScore.maxTotalScore = maxWeight
+
+    // Recalculate rating based on percentage
+    const scorePercentage = (credibilityScore.totalScore / maxWeight) * 100
+    if (scorePercentage >= 95) {
+      credibilityScore.rating = 'Exemplary'
+    } else if (scorePercentage >= 75) {
+      credibilityScore.rating = 'Strong'
+    } else if (scorePercentage >= 55) {
+      credibilityScore.rating = 'Moderate'
+    } else if (scorePercentage >= 35) {
+      credibilityScore.rating = 'Weak'
+    } else if (scorePercentage > 0) {
+      credibilityScore.rating = 'Very Poor'
+    } else {
+      credibilityScore.rating = 'Invalid'
     }
 
     const result: AnalysisResult = {

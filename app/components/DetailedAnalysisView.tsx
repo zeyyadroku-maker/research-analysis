@@ -144,18 +144,11 @@ Disciplinary Perspective: ${analysis.perspective.disciplinaryPerspective}
   }
 
   const getMaxWeight = () => {
-    return (
-      analysis.credibility.methodologicalRigor.maxScore +
-      analysis.credibility.dataTransparency.maxScore +
-      analysis.credibility.sourceQuality.maxScore +
-      analysis.credibility.authorCredibility.maxScore +
-      analysis.credibility.statisticalValidity.maxScore +
-      analysis.credibility.logicalConsistency.maxScore
-    )
+    return analysis.credibility.maxTotalScore
   }
 
   const getScorePercentage = () => {
-    const maxWeight = getMaxWeight()
+    const maxWeight = analysis.credibility.maxTotalScore
     return Math.round((analysis.credibility.totalScore / maxWeight) * 100)
   }
 
@@ -186,16 +179,18 @@ Disciplinary Perspective: ${analysis.perspective.disciplinaryPerspective}
           {/* AI Disclaimer Banner */}
           <AIDisclaimerBanner compact={true} />
 
-          {/* Header */}
-          <div className="bg-dark-800 border border-dark-700 rounded-lg p-8 mb-6 relative">
-            {/* Close Button */}
-            <button
-              onClick={onClose}
-              className="absolute top-4 right-4 bg-dark-700 border border-dark-600 text-gray-400 hover:text-white hover:bg-dark-600 transition-colors p-2 rounded-lg"
-              title="Close (Esc)"
-            >
-              <X size={24} />
-            </button>
+          {/* Sticky Header Container */}
+          <div className="sticky top-0 z-40 mb-6">
+            {/* Header */}
+            <div className="bg-dark-800 border border-dark-700 rounded-lg p-8 relative">
+              {/* Close Button - Sticky */}
+              <button
+                onClick={onClose}
+                className="absolute top-4 right-4 bg-dark-700 border border-dark-600 text-gray-400 hover:text-white hover:bg-dark-600 transition-colors p-2 rounded-lg"
+                title="Close (Esc)"
+              >
+                <X size={24} />
+              </button>
 
             <div className="flex justify-between items-start mb-6">
               <div className="flex-1">
@@ -239,6 +234,7 @@ Disciplinary Perspective: ${analysis.perspective.disciplinaryPerspective}
               <span className="ml-auto px-3 py-2 rounded-full text-xs font-medium bg-green-900 text-green-200 border border-green-700">
                 ✓ Full Text
               </span>
+            </div>
             </div>
           </div>
 

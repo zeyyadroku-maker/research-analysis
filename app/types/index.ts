@@ -39,6 +39,7 @@ export interface CredibilityScore {
   statisticalValidity: CredibilityComponent
   logicalConsistency: CredibilityComponent
   totalScore: number
+  maxTotalScore: number // Maximum possible score based on framework weights
   rating: 'Exemplary' | 'Strong' | 'Moderate' | 'Weak' | 'Very Poor' | 'Invalid'
   overallConfidence: number // 0-100: average confidence across all components
 }
