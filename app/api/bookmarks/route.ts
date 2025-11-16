@@ -1,13 +1,37 @@
-import { auth } from '@clerk/nextjs/server'
-import { supabase } from '@/app/lib/supabase'
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
 import { NextRequest, NextResponse } from 'next/server'
+import { supabase } from '@/app/lib/supabase'
 
 export async function GET() {
-  const { userId } = await auth()
+  const cookieStore = await cookies()
+  const supabaseServer = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll().map(c => ({
+            name: c.name,
+            value: c.value,
+          }))
+        },
+        setAll(cookiesToSet: any) {
+          cookiesToSet.forEach(({ name, value, options }: any) => {
+            cookieStore.set(name, value, options)
+          })
+        },
+      } as any,
+    }
+  )
 
-  if (!userId) {
+  const { data: { user } } = await supabaseServer.auth.getUser()
+
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+
+  const userId = user.id
 
   try {
     const { data: bookmarks, error } = await supabase
@@ -44,11 +68,34 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const { userId } = await auth()
+  const cookieStore = await cookies()
+  const supabaseServer = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll().map(c => ({
+            name: c.name,
+            value: c.value,
+          }))
+        },
+        setAll(cookiesToSet: any) {
+          cookiesToSet.forEach(({ name, value, options }: any) => {
+            cookieStore.set(name, value, options)
+          })
+        },
+      } as any,
+    }
+  )
 
-  if (!userId) {
+  const { data: { user } } = await supabaseServer.auth.getUser()
+
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+
+  const userId = user.id
 
   try {
     const body = await req.json()
@@ -105,11 +152,34 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const { userId } = await auth()
+  const cookieStore = await cookies()
+  const supabaseServer = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+    {
+      cookies: {
+        getAll() {
+          return cookieStore.getAll().map(c => ({
+            name: c.name,
+            value: c.value,
+          }))
+        },
+        setAll(cookiesToSet: any) {
+          cookiesToSet.forEach(({ name, value, options }: any) => {
+            cookieStore.set(name, value, options)
+          })
+        },
+      } as any,
+    }
+  )
 
-  if (!userId) {
+  const { data: { user } } = await supabaseServer.auth.getUser()
+
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+
+  const userId = user.id
 
   try {
     const { searchParams } = new URL(req.url)

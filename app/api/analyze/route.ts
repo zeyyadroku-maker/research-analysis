@@ -11,24 +11,27 @@ export async function POST(request: NextRequest) {
   try {
     // Check authentication
     const cookieStore = await cookies()
-    const supabase = createServerClient(
+    const supabaseServer = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL || '',
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
       {
         cookies: {
           getAll() {
-            return cookieStore.getAll()
+            return cookieStore.getAll().map(c => ({
+              name: c.name,
+              value: c.value,
+            }))
           },
-          setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) => {
+          setAll(cookiesToSet: any) {
+            cookiesToSet.forEach(({ name, value, options }: any) => {
               cookieStore.set(name, value, options)
             })
           },
-        },
+        } as any,
       }
     )
 
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { user } } = await supabaseServer.auth.getUser()
     if (!user) {
       return NextResponse.json(
         { error: 'Unauthorized - please sign in to analyze papers' },
