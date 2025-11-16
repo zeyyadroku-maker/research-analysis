@@ -7,33 +7,55 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey, {
   cookies: {
     getAll() {
-      // Get all cookies from document.cookie
-      const cookies: Array<{ name: string; value: string }> = []
-      if (typeof document === 'undefined') return cookies
+      if (typeof document === 'undefined') return []
 
-      document.cookie.split('; ').forEach(cookie => {
-        const [name, value] = cookie.split('=')
-        if (name && value) {
-          cookies.push({
-            name: decodeURIComponent(name),
-            value: decodeURIComponent(value),
+      const cookies: Array<{ name: string; value: string }> = []
+      try {
+        // Parse all cookies from document.cookie string
+        if (document.cookie) {
+          document.cookie.split('; ').forEach(cookie => {
+            if (cookie.trim()) {
+              const eqIndex = cookie.indexOf('=')
+              if (eqIndex > 0) {
+                const name = cookie.substring(0, eqIndex).trim()
+                const value = cookie.substring(eqIndex + 1).trim()
+                cookies.push({ name, value })
+              }
+            }
           })
         }
-      })
+      } catch (error) {
+        console.error('Error reading cookies:', error)
+      }
       return cookies
     },
     setAll(cookiesToSet: Array<{ name: string; value: string; options?: any }>) {
-      // Set cookies in document.cookie
       if (typeof document === 'undefined') return
 
-      cookiesToSet.forEach(({ name, value, options }) => {
-        const cookieString = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; path=/; ${
-          options?.maxAge ? `max-age=${options.maxAge}; ` : ''
-        }${options?.domain ? `domain=${options.domain}; ` : ''}${
-          options?.secure ? 'secure; ' : ''
-        }${options?.sameSite ? `samesite=${options.sameSite}` : ''}`
-        document.cookie = cookieString
-      })
+      try {
+        cookiesToSet.forEach(({ name, value, options }) => {
+          // Build cookie string with proper formatting
+          let cookieString = `${name}=${value}`
+          cookieString += '; path=/'
+
+          if (options?.maxAge) {
+            cookieString += `; max-age=${options.maxAge}`
+          }
+          if (options?.domain) {
+            cookieString += `; domain=${options.domain}`
+          }
+          if (options?.secure) {
+            cookieString += '; secure'
+          }
+          if (options?.sameSite) {
+            cookieString += `; samesite=${options.sameSite}`
+          }
+
+          document.cookie = cookieString
+        })
+      } catch (error) {
+        console.error('Error setting cookies:', error)
+      }
     },
   },
 })

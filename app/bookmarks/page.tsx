@@ -1,16 +1,27 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import DetailedAnalysisView from '@/app/components/DetailedAnalysisView'
 import Navigation from '@/app/components/Navigation'
 import { BookmarkedPaper, AnalysisResult } from '@/app/types'
 import { getBookmarks, removeBookmark } from '@/app/lib/bookmarks'
+import { useAuth } from '@/app/providers/AuthProvider'
 
 export default function BookmarksPage() {
+  const router = useRouter()
+  const { session, isLoading: authLoading } = useAuth()
   const [bookmarks, setBookmarks] = useState<BookmarkedPaper[]>([])
   const [selectedAnalysis, setSelectedAnalysis] = useState<AnalysisResult | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!authLoading && !session) {
+      router.push('/sign-in')
+    }
+  }, [authLoading, session, router])
 
   useEffect(() => {
     setBookmarks(getBookmarks())

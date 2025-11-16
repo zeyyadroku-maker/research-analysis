@@ -1,14 +1,25 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { BookmarkedPaper } from '@/app/types'
 import Navigation from '@/app/components/Navigation'
 import { getNormalizedScore } from '@/app/lib/scoreUtils'
+import { useAuth } from '@/app/providers/AuthProvider'
 
 export default function InsightsPage() {
+  const router = useRouter()
+  const { session, isLoading: authLoading } = useAuth()
   const [bookmarks, setBookmarks] = useState<BookmarkedPaper[]>([])
   const [loading, setLoading] = useState(true)
+
+  // Redirect if not authenticated
+  useEffect(() => {
+    if (!authLoading && !session) {
+      router.push('/sign-in')
+    }
+  }, [authLoading, session, router])
 
   // Load bookmarks from localStorage
   const loadBookmarks = () => {
