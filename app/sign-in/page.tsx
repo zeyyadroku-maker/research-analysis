@@ -90,7 +90,7 @@ export default function SignInPage() {
             </form>
 
             <p className="text-center text-gray-600 dark:text-gray-400 mt-6">
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <a href="/sign-up" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">
                 Sign Up
               </a>
