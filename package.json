@@ -9,8 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@clerk/nextjs": "^6.35.1",
     "@supabase/supabase-js": "^2.81.1",
+    "@supabase/ssr": "^0.0.10",
     "axios": "^1.13.2",
     "docx": "^9.5.1",
     "jszip": "^3.10.1",
@@ -18,8 +18,7 @@
     "next": "^15.0.0",
     "pdf-parse": "^2.4.5",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "svix": "^1.15.0"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@types/node": "^20",

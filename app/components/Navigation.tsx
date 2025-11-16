@@ -5,7 +5,7 @@ import { useTheme } from '@/app/providers/ThemeProvider'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useAuth, UserButton } from '@clerk/nextjs'
+import { useAuth } from '@/app/providers/AuthProvider'
 
 interface NavigationProps {
   onLogoClick?: () => void
@@ -14,8 +14,14 @@ interface NavigationProps {
 export default function Navigation({ onLogoClick }: NavigationProps) {
   const { theme, toggleTheme } = useTheme()
   const router = useRouter()
-  const { isSignedIn } = useAuth()
+  const { session, signOut } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const isSignedIn = !!session
+
+  const handleSignOut = async () => {
+    await signOut()
+    router.push('/')
+  }
 
   const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -97,7 +103,12 @@ export default function Navigation({ onLogoClick }: NavigationProps) {
                 </svg>
                 Bookmarks
               </Link>
-              <UserButton />
+              <button
+                onClick={handleSignOut}
+                className="px-4 py-2 bg-gray-200 dark:bg-dark-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-dark-600 rounded-lg transition-all duration-200 font-medium"
+              >
+                Sign Out
+              </button>
             </>
           ) : (
             <>
@@ -193,7 +204,12 @@ export default function Navigation({ onLogoClick }: NavigationProps) {
                   <span className="font-medium">Bookmarks</span>
                 </Link>
                 <div className="pt-3 border-t border-gray-200 dark:border-dark-700">
-                  <UserButton />
+                  <button
+                onClick={handleSignOut}
+                className="px-4 py-2 bg-gray-200 dark:bg-dark-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-dark-600 rounded-lg transition-all duration-200 font-medium"
+              >
+                Sign Out
+              </button>
                 </div>
               </>
             ) : (

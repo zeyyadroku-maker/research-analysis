@@ -6,11 +6,10 @@
 create extension if not exists "uuid-ossp";
 
 -- ============================================================================
--- USERS TABLE (synced from Clerk via webhook)
+-- USERS TABLE (synced with Supabase Auth)
 -- ============================================================================
 create table if not exists users (
-  id text primary key,
-  clerk_id text unique not null,
+  id uuid primary key references auth.users(id) on delete cascade,
   email text unique not null,
   name text,
   avatar_url text,
@@ -18,8 +17,7 @@ create table if not exists users (
   updated_at timestamp with time zone default timezone('utc'::text, now())
 );
 
--- Index on clerk_id for quick lookups
-create index if not exists idx_users_clerk_id on users(clerk_id);
+-- Index on email for quick lookups
 create index if not exists idx_users_email on users(email);
 
 -- ============================================================================
@@ -77,39 +75,45 @@ alter table analyses enable row level security;
 create policy "Users can view their own profile"
   on users
   for select
-  using (auth.uid()::text = id);
+  using (auth.uid() = id);
+
+-- USERS: Users can update their own profile
+create policy "Users can update their own profile"
+  on users
+  for update
+  using (auth.uid() = id);
 
 -- BOOKMARKS: Users can only see their own bookmarks
 create policy "Users can view their own bookmarks"
   on bookmarks
   for select
-  using (auth.uid()::text = user_id);
+  using (auth.uid() = user_id);
 
 create policy "Users can create bookmarks"
   on bookmarks
   for insert
-  with check (auth.uid()::text = user_id);
+  with check (auth.uid() = user_id);
 
 create policy "Users can delete their own bookmarks"
   on bookmarks
   for delete
-  using (auth.uid()::text = user_id);
+  using (auth.uid() = user_id);
 
 -- ANALYSES: Users can only see analyses for their bookmarks
 create policy "Users can view their own analyses"
   on analyses
   for select
-  using (auth.uid()::text = user_id);
+  using (auth.uid() = user_id);
 
 create policy "Users can create analyses"
   on analyses
   for insert
-  with check (auth.uid()::text = user_id);
+  with check (auth.uid() = user_id);
 
 create policy "Users can update their own analyses"
   on analyses
   for update
-  using (auth.uid()::text = user_id);
+  using (auth.uid() = user_id);
 
 -- ============================================================================
 -- FUNCTIONS FOR MAINTENANCE

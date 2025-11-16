@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@clerk/nextjs'
+import { useAuth } from '@/app/providers/AuthProvider'
 import { Paper } from '@/app/types'
 import DocumentTypeIndicator from './DocumentTypeIndicator'
 
@@ -13,7 +13,8 @@ interface ResultsCardProps {
 
 export default function ResultsCard({ paper, onAnalyze, isAnalyzing = false }: ResultsCardProps) {
   const router = useRouter()
-  const { isSignedIn } = useAuth()
+  const { session } = useAuth()
+  const isSignedIn = !!session
 
   const truncateText = (text: string, maxLength: number) => {
     if (text.length <= maxLength) return text
