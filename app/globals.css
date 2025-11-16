@@ -61,3 +61,27 @@ html.dark ::-webkit-scrollbar-thumb {
 html.dark ::-webkit-scrollbar-thumb:hover {
   background: #2563eb;
 }
+
+/* Hide Clerk branding elements */
+[data-clerk-powered-by],
+.cl-internal_ui_embedded_body [data-clerk-powered-by],
+.cl-signIn_footer,
+footer {
+  display: none !important;
+}
+
+/* Hide development mode badge and secured by clerk text */
+.cl__development-badge,
+.cl-development-badge,
+[data-testid="cl-secured-by-clerk"] {
+  display: none !important;
+}
+
+/* Alternative selectors for hiding Clerk branding */
+div[class*="powered"] {
+  display: none !important;
+}
+
+div[class*="development"] {
+  display: none !important;
+}

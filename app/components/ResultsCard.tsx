@@ -1,5 +1,7 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@clerk/nextjs'
 import { Paper } from '@/app/types'
 import DocumentTypeIndicator from './DocumentTypeIndicator'
 
@@ -10,6 +12,9 @@ interface ResultsCardProps {
 }
 
 export default function ResultsCard({ paper, onAnalyze, isAnalyzing = false }: ResultsCardProps) {
+  const router = useRouter()
+  const { isSignedIn } = useAuth()
+
   const truncateText = (text: string, maxLength: number) => {
     if (text.length <= maxLength) return text
     return text.substring(0, maxLength) + '...'
@@ -18,6 +23,15 @@ export default function ResultsCard({ paper, onAnalyze, isAnalyzing = false }: R
   const handleCardClick = () => {
     if (paper.url) {
       window.open(paper.url, '_blank', 'noopener,noreferrer')
+    }
+  }
+
+  const handleAnalyzeClick = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!isSignedIn) {
+      router.push('/sign-in')
+    } else {
+      onAnalyze(paper)
     }
   }
 
@@ -83,10 +97,7 @@ export default function ResultsCard({ paper, onAnalyze, isAnalyzing = false }: R
         {/* Footer with button */}
         <div className="mt-auto flex gap-1 sm:gap-2 pt-2 sm:pt-4 border-t border-gray-200 dark:border-dark-700">
           <button
-            onClick={(e) => {
-              e.stopPropagation()
-              onAnalyze(paper)
-            }}
+            onClick={handleAnalyzeClick}
             disabled={isAnalyzing}
             className="flex-1 px-2 sm:px-4 py-1 sm:py-2 bg-blue-600 dark:bg-accent-blue hover:bg-blue-700 dark:hover:bg-blue-600 disabled:bg-gray-400 dark:disabled:bg-gray-600 text-white text-xs sm:text-sm font-medium rounded transition-all duration-200 hover:shadow-lg hover:shadow-blue-500/50 disabled:cursor-not-allowed flex items-center justify-center gap-1 sm:gap-2"
           >

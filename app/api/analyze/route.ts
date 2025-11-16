@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '@clerk/nextjs/server'
 import { AnalysisResult, Paper } from '@/app/types'
 import { fetchDocumentSafe } from '@/app/lib/documentFetcher'
 import { processPdfDocument, processTextDocument } from '@/app/lib/documentProcessor'
@@ -7,6 +8,15 @@ import { buildAssessmentPrompt, buildAbstractOnlyPrompt } from '@/app/lib/prompt
 
 export async function POST(request: NextRequest) {
   try {
+    // Check authentication
+    const { userId } = await auth()
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized - please sign in to analyze papers' },
+        { status: 401 }
+      )
+    }
+
     const { paper, fullText } = await request.json() as { paper: Paper; fullText: string }
 
     if (!paper) {

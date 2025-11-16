@@ -5,6 +5,7 @@ import { useTheme } from '@/app/providers/ThemeProvider'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useAuth, UserButton } from '@clerk/nextjs'
 
 interface NavigationProps {
   onLogoClick?: () => void
@@ -13,7 +14,9 @@ interface NavigationProps {
 export default function Navigation({ onLogoClick }: NavigationProps) {
   const { theme, toggleTheme } = useTheme()
   const router = useRouter()
+  const { isSignedIn } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
 
   const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -73,25 +76,46 @@ export default function Navigation({ onLogoClick }: NavigationProps) {
               </svg>
             )}
           </button>
-          <Link
-            href="/insights"
-            className="px-4 py-2 bg-gray-200 dark:bg-dark-700 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg transition-all duration-200 flex items-center gap-2"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z"/>
-              <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/>
-            </svg>
-            Insights
-          </Link>
-          <Link
-            href="/bookmarks"
-            className="px-4 py-2 bg-gray-200 dark:bg-dark-700 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg transition-all duration-200 flex items-center gap-2"
-          >
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
-            </svg>
-            Bookmarks
-          </Link>
+
+          {isSignedIn ? (
+            <>
+              <Link
+                href="/insights"
+                className="px-4 py-2 bg-gray-200 dark:bg-dark-700 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg transition-all duration-200 flex items-center gap-2"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z"/>
+                  <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/>
+                </svg>
+                Insights
+              </Link>
+              <Link
+                href="/bookmarks"
+                className="px-4 py-2 bg-gray-200 dark:bg-dark-700 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg transition-all duration-200 flex items-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
+                </svg>
+                Bookmarks
+              </Link>
+              <UserButton />
+            </>
+          ) : (
+            <>
+              <Link
+                href="/sign-in"
+                className="px-4 py-2 bg-gray-200 dark:bg-dark-700 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-lg transition-all duration-200 font-medium"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/sign-up"
+                className="px-4 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-all duration-200 font-medium"
+              >
+                Sign Up
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Mobile Controls - Theme Toggle and Hamburger */}
@@ -146,27 +170,51 @@ export default function Navigation({ onLogoClick }: NavigationProps) {
       {mobileMenuOpen && (
         <div className="md:hidden border-t border-gray-200 dark:border-dark-700 bg-white dark:bg-dark-800 animate-slide-down">
           <div className="max-w-7xl mx-auto px-3 py-4 sm:px-4 lg:px-8 space-y-3">
-            <Link
-              href="/insights"
-              onClick={closeMobileMenu}
-              className="w-full px-4 py-2 rounded-lg bg-gray-100 dark:bg-dark-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-600 transition-all duration-200 flex items-center gap-3"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z"/>
-                <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/>
-              </svg>
-              <span className="font-medium">Insights</span>
-            </Link>
-            <Link
-              href="/bookmarks"
-              onClick={closeMobileMenu}
-              className="w-full px-4 py-2 rounded-lg bg-gray-100 dark:bg-dark-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-600 transition-all duration-200 flex items-center gap-3"
-            >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
-              </svg>
-              <span className="font-medium">Bookmarks</span>
-            </Link>
+            {isSignedIn ? (
+              <>
+                <Link
+                  href="/insights"
+                  onClick={closeMobileMenu}
+                  className="w-full px-4 py-2 rounded-lg bg-gray-100 dark:bg-dark-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-600 transition-all duration-200 flex items-center gap-3"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 12c.552 0 1.005-.449.95-.998a10 10 0 0 0-8.953-8.951c-.55-.055-.998.398-.998.95v8a1 1 0 0 0 1 1z"/>
+                    <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/>
+                  </svg>
+                  <span className="font-medium">Insights</span>
+                </Link>
+                <Link
+                  href="/bookmarks"
+                  onClick={closeMobileMenu}
+                  className="w-full px-4 py-2 rounded-lg bg-gray-100 dark:bg-dark-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-600 transition-all duration-200 flex items-center gap-3"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
+                  </svg>
+                  <span className="font-medium">Bookmarks</span>
+                </Link>
+                <div className="pt-3 border-t border-gray-200 dark:border-dark-700">
+                  <UserButton />
+                </div>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/sign-in"
+                  onClick={closeMobileMenu}
+                  className="w-full px-4 py-2 rounded-lg bg-gray-100 dark:bg-dark-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-dark-600 transition-all duration-200 font-medium text-center"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/sign-up"
+                  onClick={closeMobileMenu}
+                  className="w-full px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-all duration-200 font-medium text-center"
+                >
+                  Sign Up
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}
