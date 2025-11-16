@@ -42,24 +42,7 @@ export default function SignUpPage() {
         return
       }
 
-      if (data?.user) {
-        // Create user profile in users table
-        const { error: insertError } = await supabase
-          .from('users')
-          .insert({
-            id: data.user.id,
-            email: data.user.email || '',
-            name: '',
-            avatar_url: null,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          })
-
-        if (insertError) {
-          console.error('Error creating user profile:', insertError)
-        }
-      }
-
+      // User profile is automatically created by Supabase trigger
       router.push('/')
     } catch (err) {
       setError('An error occurred. Please try again.')

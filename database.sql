@@ -25,7 +25,7 @@ create index if not exists idx_users_email on users(email);
 -- ============================================================================
 create table if not exists bookmarks (
   id uuid primary key default uuid_generate_v4(),
-  user_id text not null references users(id) on delete cascade,
+  user_id uuid not null references users(id) on delete cascade,
   paper_id text not null,
   paper_title text not null,
   paper_authors text[] not null default '{}',
@@ -50,7 +50,7 @@ create unique index if not exists idx_bookmarks_user_paper on bookmarks(user_id,
 -- ============================================================================
 create table if not exists analyses (
   id uuid primary key default uuid_generate_v4(),
-  user_id text not null references users(id) on delete cascade,
+  user_id uuid not null references users(id) on delete cascade,
   bookmark_id uuid not null references bookmarks(id) on delete cascade,
   analysis_data jsonb not null,
   created_at timestamp with time zone default timezone('utc'::text, now()),
@@ -127,6 +127,22 @@ begin
   return new;
 end;
 $$ language plpgsql;
+
+-- Function to auto-create user profile when auth user is created
+create or replace function public.handle_new_user()
+returns trigger as $$
+begin
+  insert into public.users (id, email)
+  values (new.id, new.email);
+  return new;
+end;
+$$ language plpgsql security definer;
+
+-- Trigger to call handle_new_user when auth.users is created
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row
+  execute function public.handle_new_user();
 
 -- Create triggers for updated_at
 create trigger users_updated_at_trigger
