@@ -16,7 +16,6 @@ export default function Navigation({ onLogoClick }: NavigationProps) {
   const router = useRouter()
   const { isSignedIn } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [userMenuOpen, setUserMenuOpen] = useState(false)
 
   const handleLogoClick = (e: React.MouseEvent) => {
     e.preventDefault()
