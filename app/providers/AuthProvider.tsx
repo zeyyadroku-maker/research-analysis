@@ -50,6 +50,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // First check if we're handling a callback
       if (typeof window !== 'undefined' && window.location.search) {
         await handleAuthCallback()
+        // Wait 200ms to ensure cookies are persisted before checking session
+        await new Promise(resolve => setTimeout(resolve, 200))
       }
 
       const { data: { session } } = await supabase.auth.getSession()
