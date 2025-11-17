@@ -2,12 +2,12 @@
 
 import { AnalysisResult } from '@/app/types'
 import { useState, useEffect } from 'react'
-import { saveBookmark, removeBookmark, isBookmarked } from '@/app/lib/bookmarks'
+import { saveBookmark, removeBookmark, isBookmarked, getBookmark, updateBookmarkNotes } from '@/app/lib/bookmarks'
 import DocumentTypeIndicator from './DocumentTypeIndicator'
 import FrameworkAssessmentView from './FrameworkAssessmentView'
 import AIDisclaimerBanner from './AIDisclaimerBanner'
 import { getFrameworkGuidelines } from '@/app/lib/adaptiveFramework'
-import { FolderDown, X } from 'lucide-react'
+import { FolderDown, X, ChevronDown, ChevronUp } from 'lucide-react'
 
 interface DetailedAnalysisViewProps {
   analysis: AnalysisResult
@@ -17,6 +17,8 @@ interface DetailedAnalysisViewProps {
 export default function DetailedAnalysisView({ analysis, onClose }: DetailedAnalysisViewProps) {
   const [isBookmarkedState, setIsBookmarkedState] = useState(false)
   const [notes, setNotes] = useState('')
+  const [isNotesExpanded, setIsNotesExpanded] = useState(false)
+  const [isSavingNotes, setIsSavingNotes] = useState(false)
 
   // Handle Esc key to close modal
   useEffect(() => {
@@ -31,15 +33,34 @@ export default function DetailedAnalysisView({ analysis, onClose }: DetailedAnal
 
   useEffect(() => {
     setIsBookmarkedState(isBookmarked(analysis.paper.id))
+    // Load existing notes if bookmarked
+    const bookmark = getBookmark(analysis.paper.id)
+    if (bookmark && bookmark.notes) {
+      setNotes(bookmark.notes)
+    } else {
+      setNotes('')
+    }
   }, [analysis.paper.id])
 
   const handleBookmark = () => {
     if (isBookmarkedState) {
       removeBookmark(analysis.paper.id)
       setIsBookmarkedState(false)
+      setNotes('')
     } else {
       saveBookmark(analysis, notes)
       setIsBookmarkedState(true)
+    }
+  }
+
+  const handleSaveNotes = () => {
+    const bookmark = getBookmark(analysis.paper.id)
+    if (bookmark) {
+      setIsSavingNotes(true)
+      setTimeout(() => {
+        updateBookmarkNotes(bookmark.id, notes)
+        setIsSavingNotes(false)
+      }, 300)
     }
   }
 
@@ -548,6 +569,70 @@ Disciplinary Perspective: ${analysis.perspective.disciplinaryPerspective}
               </div>
             )}
           </div>
+
+          {/* Notes Section */}
+          {isBookmarkedState && (
+            <div className="bg-dark-800 border border-dark-700 rounded-lg p-8 mb-6">
+              <button
+                onClick={() => setIsNotesExpanded(!isNotesExpanded)}
+                className="w-full flex items-center gap-3 mb-4 hover:opacity-80 transition-opacity"
+              >
+                <svg className="w-6 h-6 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                </svg>
+                <h2 className="text-2xl font-bold text-white">Notes</h2>
+                <div className="ml-auto">
+                  {isNotesExpanded ? (
+                    <ChevronUp size={24} className="text-gray-400" />
+                  ) : (
+                    <ChevronDown size={24} className="text-gray-400" />
+                  )}
+                </div>
+              </button>
+
+              {isNotesExpanded && (
+                <div className="space-y-4">
+                  <textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="Add personal notes about this paper... Your notes are automatically saved when you click 'Save Notes'."
+                    className="w-full h-32 p-4 border border-dark-600 rounded-lg bg-dark-700 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-accent-blue resize-none"
+                  />
+
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleSaveNotes}
+                      disabled={isSavingNotes || !isBookmarkedState}
+                      className="px-6 py-2 rounded font-medium transition-all duration-200 bg-accent-blue hover:bg-blue-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white flex items-center gap-2"
+                    >
+                      {isSavingNotes ? (
+                        <>
+                          <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          Save Notes
+                        </>
+                      )}
+                    </button>
+
+                    {notes && (
+                      <p className="text-sm text-gray-400 flex items-center">
+                        {notes.length} characters
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
