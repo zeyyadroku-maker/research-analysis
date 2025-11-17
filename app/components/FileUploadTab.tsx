@@ -71,6 +71,7 @@ export default function FileUploadTab({
 
       const response = await fetch('/api/upload', {
         method: 'POST',
+        credentials: 'include',
         body: formData,
       })
 
@@ -138,7 +139,7 @@ export default function FileUploadTab({
       onAnalysisStart?.()
 
       // Create a synthetic paper object for text analysis
-      const synthethicPaper: Paper = {
+      const syntheticPaper: Paper = {
         id: `text-${Date.now()}`,
         title: 'Direct Text Analysis',
         authors: ['User Input'],
@@ -154,8 +155,9 @@ export default function FileUploadTab({
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
-          paper: synthethicPaper,
+          paper: syntheticPaper,
           fullText: textContent,
         }),
       })

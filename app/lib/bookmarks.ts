@@ -33,13 +33,21 @@ export function saveBookmark(analysis: AnalysisResult, notes?: string): Bookmark
   return bookmarkedPaper
 }
 
-export function removeBookmark(id: string): void {
+export function removeBookmark(paperId: string): boolean {
   const bookmarks = getBookmarks()
-  const filtered = bookmarks.filter(b => b.id !== id)
+  const bookmarkIndex = bookmarks.findIndex(b => b.analysis.paper.id === paperId)
+
+  if (bookmarkIndex === -1) {
+    return false
+  }
+
+  bookmarks.splice(bookmarkIndex, 1)
 
   if (typeof window !== 'undefined') {
-    localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(filtered))
+    localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(bookmarks))
   }
+
+  return true
 }
 
 export function isBookmarked(paperId: string): boolean {

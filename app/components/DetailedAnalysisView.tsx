@@ -16,7 +16,7 @@ interface DetailedAnalysisViewProps {
 
 export default function DetailedAnalysisView({ analysis, onClose }: DetailedAnalysisViewProps) {
   const [isBookmarkedState, setIsBookmarkedState] = useState(false)
-  const [notes] = useState('')
+  const [notes, setNotes] = useState('')
 
   // Handle Esc key to close modal
   useEffect(() => {
